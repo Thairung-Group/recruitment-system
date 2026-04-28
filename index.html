@@ -1,17 +1,2501 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Thairung Recruit System - AI-powered recruitment pipeline" />
-    <title>Thairung Recruit System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Thairung Group Recruitment System — ระบบคัดกรองผู้สมัครงาน</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #4f46e5;
+    --brand-dark: #4338ca;
+    --bg: #f7f8fb;
+  }
+  html, body { font-family: 'IBM Plex Sans Thai', 'Inter', system-ui, sans-serif; background: var(--bg); }
+  .brand-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%); }
+  .pill { padding: 2px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+  .card { background: #fff; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06); }
+  .nav-link { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; color: #475569; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .nav-link:hover { background: #f1f5f9; color: #1e293b; }
+  .nav-link.active { background: #eef2ff; color: var(--brand); }
+  .btn-primary { background: var(--brand); color: #fff; padding: 10px 18px; border-radius: 10px; font-weight: 500; cursor: pointer; transition: .15s; border: none; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-secondary { background: #fff; border: 1px solid #e2e8f0; color: #475569; padding: 10px 18px; border-radius: 10px; font-weight: 500; cursor: pointer; transition: .15s; }
+  .btn-secondary:hover { border-color: #cbd5e1; background: #f8fafc; }
+  .btn-danger { background: #ef4444; color: #fff; padding: 10px 18px; border-radius: 10px; font-weight: 500; cursor: pointer; border: none; }
+  .input, .select, .textarea { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: .15s; background:#fff; font-family: inherit; }
+  .input:focus, .select:focus, .textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+  .label { display: block; font-size: 13px; font-weight: 500; color: #334155; margin-bottom: 6px; }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th { text-align: left; font-size: 12px; font-weight: 600; color: #64748b; padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: .03em; }
+  .table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; vertical-align: middle; }
+  .table tr:hover td { background: #fafbfc; }
+  .progress-bar { height: 8px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 9999px; transition: width .6s; }
+  .file-drop { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; transition: .15s; cursor: pointer; background: #f8fafc; }
+  .file-drop:hover { border-color: var(--brand); background: #f0f0ff; }
+  .toast { position: fixed; top: 24px; right: 24px; background: #1e293b; color: #fff; padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 9999; animation: slideIn .25s; }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal { background: #fff; border-radius: 16px; max-width: 600px; width: 100%; max-height: 92vh; overflow: auto; }
+  details > summary { cursor: pointer; list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+  .doc-content h2 { font-size: 22px; font-weight: 700; color: #0f172a; margin: 28px 0 12px; }
+  .doc-content h3 { font-size: 17px; font-weight: 600; color: #0f172a; margin: 20px 0 8px; }
+  .doc-content h4 { font-size: 15px; font-weight: 600; color: #334155; margin: 14px 0 6px; }
+  .doc-content p { margin: 8px 0; line-height: 1.7; color: #475569; }
+  .doc-content ul { padding-left: 22px; margin: 8px 0; }
+  .doc-content li { margin: 4px 0; line-height: 1.7; color: #475569; }
+  .doc-content code { background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: 'SF Mono', Menlo, monospace; }
+  .doc-content pre { background: #0f172a; color: #e2e8f0; padding: 16px; border-radius: 10px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 10px 0; }
+  .doc-content pre code { background: transparent; color: inherit; padding: 0; }
+  .doc-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .doc-content table th { background: #f1f5f9; text-align: left; padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 600; }
+  .doc-content table td { padding: 8px 12px; border: 1px solid #e2e8f0; vertical-align: top; }
+  .badge-skill { background: #eef2ff; color: #4338ca; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; display: inline-block; margin: 2px; }
+  .badge-missing { background: #fef2f2; color: #b91c1c; }
+  .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast-root"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ============================================================
+   Thairung Group Recruitment System — ระบบคัดกรองผู้สมัครงาน (Single-File Demo)
+   ระบบนี้ทำงานแบบ client-side ทั้งหมด ใช้ LocalStorage จำลอง DB
+   ออกแบบเพื่อแสดง flow และ logic เต็มรูปแบบสำหรับ demo
+   ============================================================ */
+
+/* ---------- 1) STATE & PERSISTENCE ---------- */
+const STORAGE_KEY = 'hiresense_v1';
+const SESSION_KEY = 'hiresense_session_v1';
+
+const defaultState = {
+  users: [
+    { id: 'u1', name: 'คุณนภา (HR)', email: 'hr@company.com', password: 'hr123', role: 'hr' },
+    { id: 'u2', name: 'คุณวีรพล (HR)', email: 'hr2@company.com', password: 'hr123', role: 'hr' },
+    { id: 'u3', name: 'คุณสมชาย (ผู้บริหาร)', email: 'exec@company.com', password: 'exec123', role: 'executive' },
+    { id: 'u4', name: 'คุณอรพิน (ผู้บริหาร)', email: 'exec2@company.com', password: 'exec123', role: 'executive' },
+    { id: 'u5', name: 'แอดมินระบบ', email: 'admin@company.com', password: 'admin123', role: 'admin' },
+  ],
+  positions: [
+    { id: 'p1', title: 'Senior Frontend Developer', department: 'Engineering' },
+    { id: 'p2', title: 'Data Analyst', department: 'Data' },
+    { id: 'p3', title: 'HR Manager', department: 'People' },
+    { id: 'p4', title: 'Backend Engineer', department: 'Engineering' },
+  ],
+  jobDescriptions: [
+    { id: 'jd1', positionId: 'p1', text: 'ต้องการ Senior Frontend Developer ประสบการณ์ 4-6 ปี เชี่ยวชาญ React, TypeScript, Next.js, Tailwind CSS, REST API, GraphQL มีประสบการณ์ design system, performance optimization, accessibility ปริญญาตรี Computer Science หรือเทียบเท่า สื่อสารภาษาอังกฤษได้ดี ทำงานเป็นทีมได้' },
+    { id: 'jd2', positionId: 'p2', text: 'Data Analyst ประสบการณ์ 2-4 ปี เชี่ยวชาญ SQL, Python, Pandas, Tableau, Power BI สามารถวิเคราะห์ข้อมูลธุรกิจ สร้าง dashboard นำเสนอผลลัพธ์ให้ stakeholders จบสาขา Statistics, Computer Science, MIS' },
+    { id: 'jd3', positionId: 'p3', text: 'HR Manager ประสบการณ์ 5+ ปี ดูแล recruitment, employee relations, performance management, compensation & benefits ใช้ HRIS ได้ดี สื่อสารภาษาอังกฤษได้ มี leadership ปริญญาตรี/โท ด้าน Human Resources Management' },
+    { id: 'jd4', positionId: 'p4', text: 'Backend Engineer ประสบการณ์ 3-5 ปี เชี่ยวชาญ Node.js, TypeScript, PostgreSQL, Redis, AWS มีประสบการณ์ microservices, API design, system design จบ Computer Engineering หรือ Computer Science' },
+  ],
+  candidates: [
+    {
+      id: 'c1', name: 'ณัฐพล จันทร์เพ็ญ', email: 'natthapol@example.com', phone: '081-234-5678',
+      positionId: 'p1', jdId: 'jd1', addedBy: 'u1', addedAt: '2026-04-20T09:30:00',
+      resumeText: 'Senior Frontend Developer 5 ปี เชี่ยวชาญ React, TypeScript, Next.js, Tailwind, GraphQL, REST API ทำ design system 2 ปี เคยปรับ performance ลด TTI 40% สนใจ accessibility ปริญญาตรี Computer Science TOEIC 850',
+      hrNote: 'พูดเก่ง พรีเซนต์ดี portfolio น่าสนใจมาก',
+      status: 'evaluated',
+      files: [
+        { id: 'f1', type: 'resume', name: 'Natthapol_Resume.pdf', size: 245000, mime: 'application/pdf' },
+        { id: 'f2', type: 'jd', name: 'JD_Senior_Frontend.pdf', size: 89000, mime: 'application/pdf' },
+        { id: 'f3', type: 'audio', name: 'phone_screen.mp3', size: 4200000, mime: 'audio/mpeg' },
+      ],
+      aiResult: null, hrReview: null, executiveReview: null, assignment: null,
+    },
+    {
+      id: 'c2', name: 'ปริยา สวัสดี', email: 'priya@example.com', phone: '089-555-1234',
+      positionId: 'p2', jdId: 'jd2', addedBy: 'u1', addedAt: '2026-04-22T14:00:00',
+      resumeText: 'Data Analyst 3 ปี เชี่ยวชาญ SQL, Python, Pandas, Tableau ทำ dashboard ให้ฝ่ายขาย จบ MIS เคยทำงานกับ stakeholders หลายแผนก',
+      hrNote: 'ประสบการณ์ตรงสายมาก',
+      status: 'sent_to_exec', files: [
+        { id: 'f4', type: 'resume', name: 'Priya_Resume.pdf', size: 198000, mime: 'application/pdf' },
+        { id: 'f5', type: 'jd', name: 'JD_Data_Analyst.docx', size: 56000, mime: 'application/docx' },
+      ],
+      aiResult: null, hrReview: null, executiveReview: null, assignment: null,
+    },
+  ],
+  activityLogs: [],
+  reviewAssignments: [],
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultState));
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return JSON.parse(JSON.stringify(defaultState));
+  }
+}
+function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+function loadSession() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
+}
+function saveSession(s) {
+  if (s) sessionStorage.setItem(SESSION_KEY, JSON.stringify(s));
+  else sessionStorage.removeItem(SESSION_KEY);
+}
+
+let state = loadState();
+let session = loadSession();
+
+/* ---------- 2) UTILITIES ---------- */
+const $ = (sel) => document.querySelector(sel);
+const uid = (p) => p + '_' + Math.random().toString(36).slice(2, 9);
+const fmt = (iso) => {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return d.toLocaleString('th-TH', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+const fmtDateOnly = (iso) => {
+  if (!iso) return '-';
+  return new Date(iso).toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+const sizeFmt = (b) => {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(2) + ' MB';
+};
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.style.background = type === 'error' ? '#dc2626' : type === 'warn' ? '#f59e0b' : '#1e293b';
+  el.textContent = msg;
+  $('#toast-root').appendChild(el);
+  setTimeout(() => el.remove(), 2800);
+}
+function logActivity(action, entity, entityId, meta={}) {
+  state.activityLogs.unshift({
+    id: uid('log'), userId: session?.userId || null, userName: session?.name || 'system',
+    role: session?.role || 'system', action, entity, entityId, meta,
+    timestamp: new Date().toISOString(),
+  });
+  saveState(state);
+}
+
+/* ---------- 3) STATUS HELPERS ---------- */
+const STATUS_LABELS = {
+  new: { label: 'ใหม่', color: 'bg-slate-100 text-slate-700' },
+  evaluated: { label: 'ประเมิน AI แล้ว', color: 'bg-blue-100 text-blue-700' },
+  pending_exec: { label: 'รอส่งผู้บริหาร', color: 'bg-amber-100 text-amber-700' },
+  sent_to_exec: { label: 'ส่งให้ผู้บริหารแล้ว', color: 'bg-violet-100 text-violet-700' },
+  interview: { label: 'ผ่านเข้ารอบสัมภาษณ์', color: 'bg-emerald-100 text-emerald-700' },
+  rejected: { label: 'ไม่ผ่าน', color: 'bg-rose-100 text-rose-700' },
+  other_position: { label: 'เหมาะกับตำแหน่งอื่น', color: 'bg-orange-100 text-orange-700' },
+};
+const statusPill = (s) => {
+  const v = STATUS_LABELS[s] || STATUS_LABELS.new;
+  return `<span class="pill ${v.color}">${v.label}</span>`;
+};
+const matchColor = (pct) => pct >= 80 ? '#10b981' : pct >= 60 ? '#3b82f6' : pct >= 40 ? '#f59e0b' : '#ef4444';
+const matchLabel = (pct) => pct >= 80 ? 'สูงมาก' : pct >= 60 ? 'ดี' : pct >= 40 ? 'ปานกลาง' : 'ต่ำ';
+
+/* ---------- 4) AI MATCHING (simulated) ---------- */
+const SKILL_DICT = [
+  'react','typescript','javascript','next.js','nextjs','tailwind','css','html','graphql','rest','api',
+  'design system','performance','accessibility','sql','python','pandas','tableau','power bi','powerbi',
+  'node.js','nodejs','postgresql','redis','aws','microservices','api design','system design','docker',
+  'kubernetes','ci/cd','git','agile','scrum','recruitment','hris','leadership','communication',
+  'employee relations','performance management','statistics','machine learning','computer science','mis',
+  'computer engineering','tooic','toeic','english',
+];
+function extractSkills(text) {
+  const lower = (text || '').toLowerCase();
+  const found = new Set();
+  SKILL_DICT.forEach(s => { if (lower.includes(s)) found.add(s); });
+  return [...found];
+}
+function extractYears(text) {
+  const m = (text || '').match(/(\d+)\s*(?:\+\s*)?(?:ปี|years?|yrs?)/i);
+  return m ? parseInt(m[1]) : null;
+}
+function runAIMatching(resumeText, jdText) {
+  const rs = extractSkills(resumeText);
+  const js = extractSkills(jdText);
+  const matched = rs.filter(s => js.includes(s));
+  const missing = js.filter(s => !rs.includes(s));
+  const skillScore = js.length === 0 ? 50 : Math.round((matched.length / js.length) * 100);
+
+  const ry = extractYears(resumeText);
+  const jy = extractYears(jdText);
+  let expScore = 70;
+  if (ry !== null && jy !== null) expScore = ry >= jy ? 100 : Math.round((ry / jy) * 100);
+
+  const eduKeywords = ['ปริญญาตรี','ปริญญาโท','computer science','engineering','statistics','mis','human resources'];
+  const eduMatch = eduKeywords.some(k => (resumeText||'').toLowerCase().includes(k.toLowerCase())
+    && (jdText||'').toLowerCase().includes(k.toLowerCase())) ? 100 : 60;
+
+  const overall = Math.round(skillScore * 0.55 + expScore * 0.30 + eduMatch * 0.15);
+
+  const pros = [];
+  const cons = [];
+  if (matched.length > 0) pros.push(`มีทักษะตรงกับ JD ${matched.length} ทักษะ ได้แก่ ${matched.slice(0,5).join(', ')}`);
+  if (ry && jy && ry >= jy) pros.push(`ประสบการณ์ ${ry} ปี ตรงตามเกณฑ์ที่ต้องการ ${jy} ปี`);
+  if (eduMatch === 100) pros.push('การศึกษาตรงกับสายงาน');
+  if (missing.length > 0) cons.push(`ขาดทักษะที่ JD ต้องการ ${missing.length} รายการ: ${missing.slice(0,5).join(', ')}`);
+  if (ry && jy && ry < jy) cons.push(`ประสบการณ์ยังไม่ถึงเกณฑ์ (มี ${ry} ปี, ต้องการ ${jy} ปี)`);
+  if (matched.length === 0) cons.push('ไม่พบทักษะที่ตรงกับ JD ในข้อมูล Resume');
+
+  let summary = '';
+  let recommend = '';
+  if (overall >= 80) {
+    summary = 'ผู้สมัครมีคุณสมบัติเหมาะสมสูงกับตำแหน่งนี้ ทั้งทักษะหลักและประสบการณ์ตรงกับความต้องการของ JD แนะนำให้นัดสัมภาษณ์';
+    recommend = 'ควรนัดสัมภาษณ์';
+  } else if (overall >= 60) {
+    summary = 'ผู้สมัครมีคุณสมบัติพอใช้ได้ ทักษะส่วนใหญ่ตรง แต่ยังมีบางจุดที่ขาด อาจพิจารณาสัมภาษณ์เพื่อประเมินเชิงลึก';
+    recommend = 'พิจารณานัดสัมภาษณ์';
+  } else if (overall >= 40) {
+    summary = 'ผู้สมัครมีทักษะบางส่วนตรง แต่ยังขาดทักษะสำคัญหลายอย่าง อาจไม่เหมาะตำแหน่งนี้โดยตรง แต่อาจเหมาะกับตำแหน่งอื่น';
+    recommend = 'อาจเหมาะกับตำแหน่งอื่น';
+  } else {
+    summary = 'ผู้สมัครมีคุณสมบัติไม่ตรงกับ JD มากพอ แนะนำให้พิจารณาผู้สมัครรายอื่น';
+    recommend = 'ไม่แนะนำให้สัมภาษณ์';
+  }
+
+  return {
+    overallScore: overall,
+    skillScore, expScore, eduScore: eduMatch,
+    matchedSkills: matched, missingSkills: missing,
+    candidateYears: ry, requiredYears: jy,
+    summary, pros, cons, recommendation: recommend,
+    computedAt: new Date().toISOString(),
+  };
+}
+
+/* ---------- 5) ROUTING ---------- */
+function navigate(hash) { window.location.hash = hash; }
+window.addEventListener('hashchange', render);
+window.addEventListener('load', render);
+
+function render() {
+  state = loadState(); session = loadSession();
+  const hash = window.location.hash.slice(1) || '/';
+  const root = $('#app');
+
+  if (!session && !hash.startsWith('/login') && hash !== '/docs') {
+    return renderLogin(root);
+  }
+  if (hash === '/' || hash.startsWith('/login')) return renderLogin(root);
+  if (hash === '/docs') return renderDocs(root);
+
+  if (session.role === 'hr') {
+    if (hash === '/hr/dashboard') return renderHRDashboard(root);
+    if (hash === '/hr/add') return renderAddCandidate(root);
+    if (hash.startsWith('/hr/candidate/')) return renderCandidateDetail(root, hash.split('/').pop());
+    if (hash === '/hr/summary') return renderHRSummary(root);
+    if (hash === '/hr/activity') return renderActivityLog(root);
+    return renderHRDashboard(root);
+  }
+  if (session.role === 'executive') {
+    if (hash === '/exec/dashboard') return renderExecDashboard(root);
+    if (hash.startsWith('/exec/review/')) return renderExecReview(root, hash.split('/').pop());
+    return renderExecDashboard(root);
+  }
+  if (session.role === 'admin') {
+    if (hash === '/admin/users') return renderAdminUsers(root);
+    if (hash === '/admin/positions') return renderAdminPositions(root);
+    if (hash === '/admin/activity') return renderActivityLog(root);
+    return renderAdminUsers(root);
+  }
+  return renderLogin(root);
+}
+
+/* ---------- 6) SHARED LAYOUT ---------- */
+function shell(content, navItems, title) {
+  const initials = (session?.name || '?').split(' ').slice(0,2).map(s => s[0]).join('');
+  return `
+  <div class="min-h-screen flex">
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0">
+      <div class="px-5 py-5 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl brand-gradient flex items-center justify-center text-white font-bold">T</div>
+          <div>
+            <div class="font-bold text-slate-800">Thairung Group Recruitment System</div>
+            <div class="text-xs text-slate-500">${title}</div>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-3 space-y-1">
+        ${navItems.map(it => `
+          <a class="nav-link ${window.location.hash === '#'+it.href ? 'active' : ''}" onclick="navigate('${it.href}')">
+            <span>${it.icon}</span><span>${it.label}</span>
+          </a>`).join('')}
+        <a class="nav-link" onclick="navigate('/docs')">
+          <span>📘</span><span>เอกสารระบบ (PRD)</span>
+        </a>
+      </nav>
+      <div class="p-3 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-2">
+          <div class="w-9 h-9 rounded-full brand-gradient text-white flex items-center justify-center font-semibold text-sm">${initials}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-700 truncate">${session?.name || ''}</div>
+            <div class="text-xs text-slate-500 truncate">${session?.email || ''}</div>
+          </div>
+        </div>
+        <button class="w-full mt-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg text-left flex items-center gap-2" onclick="logout()">
+          <span>🚪</span><span>ออกจากระบบ</span>
+        </button>
+      </div>
+    </aside>
+    <main class="flex-1 overflow-auto">${content}</main>
+  </div>`;
+}
+
+const HR_NAV = [
+  { href:'/hr/dashboard', label:'แดชบอร์ด', icon:'🏠' },
+  { href:'/hr/add', label:'เพิ่มผู้สมัคร', icon:'➕' },
+  { href:'/hr/summary', label:'สรุปทั้งหมด', icon:'📊' },
+  { href:'/hr/activity', label:'Activity Log', icon:'🔔' },
+];
+const EXEC_NAV = [
+  { href:'/exec/dashboard', label:'รายการรอประเมิน', icon:'📋' },
+];
+const ADMIN_NAV = [
+  { href:'/admin/users', label:'จัดการผู้ใช้', icon:'👥' },
+  { href:'/admin/positions', label:'ตำแหน่งงาน', icon:'💼' },
+  { href:'/admin/activity', label:'Activity Log', icon:'🔔' },
+];
+
+/* ---------- 7) LOGIN ---------- */
+function renderLogin(root) {
+  root.innerHTML = `
+  <div class="min-h-screen grid lg:grid-cols-2">
+    <div class="brand-gradient hidden lg:flex flex-col justify-between p-12 text-white relative overflow-hidden">
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 mb-12">
+          <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">T</div>
+          <div class="text-2xl font-bold">Thairung Group Recruitment System</div>
+        </div>
+        <h1 class="text-4xl font-bold leading-tight mb-4">ระบบคัดกรองผู้สมัครงาน<br/>ที่ขับเคลื่อนด้วย AI</h1>
+        <p class="text-white/85 text-lg leading-relaxed max-w-md">ช่วย HR เปรียบเทียบ Resume กับ JD โดยอัตโนมัติ ส่งผลให้ผู้บริหารพิจารณา และติดตามสถานะผู้สมัครได้ครบในที่เดียว</p>
+        <div class="mt-12 space-y-3 text-white/90">
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm">✓</span><span>AI วิเคราะห์ความเหมาะสมเป็นเปอร์เซ็นต์</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm">✓</span><span>Workflow ส่งผู้บริหารประเมินครบวงจร</span></div>
+          <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm">✓</span><span>ระบบสิทธิ์แยกตาม Role พร้อม Activity Log</span></div>
+        </div>
+      </div>
+      <div class="text-sm text-white/70 relative z-10">© 2026 Thairung Group Recruitment System — Demo Single-File HTML</div>
+    </div>
+    <div class="flex flex-col justify-center p-8 lg:p-16 bg-white">
+      <div class="max-w-sm w-full mx-auto">
+        <div class="lg:hidden flex items-center gap-2 mb-8">
+          <div class="w-9 h-9 rounded-xl brand-gradient flex items-center justify-center text-white font-bold">T</div>
+          <div class="font-bold text-slate-800 text-xl">Thairung Group Recruitment System</div>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-1">เข้าสู่ระบบ</h2>
+        <p class="text-slate-500 mb-6">ใช้บัญชีของบริษัทเพื่อเข้าใช้งาน</p>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="label">อีเมล</label>
+            <input class="input" type="email" id="email" placeholder="you@company.com" required />
+          </div>
+          <div>
+            <label class="label">รหัสผ่าน</label>
+            <input class="input" type="password" id="password" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn-primary w-full">เข้าสู่ระบบ</button>
+        </form>
+        <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="text-xs font-semibold text-slate-700 mb-2">บัญชีทดสอบ (คลิกเพื่อใช้งาน)</div>
+          <div class="space-y-1 text-xs">
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-white border border-transparent hover:border-slate-200" onclick="quickLogin('hr@company.com','hr123')">
+              <span class="font-medium text-slate-700">HR:</span> hr@company.com / hr123
+            </button>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-white border border-transparent hover:border-slate-200" onclick="quickLogin('exec@company.com','exec123')">
+              <span class="font-medium text-slate-700">ผู้บริหาร:</span> exec@company.com / exec123
+            </button>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-white border border-transparent hover:border-slate-200" onclick="quickLogin('admin@company.com','admin123')">
+              <span class="font-medium text-slate-700">Admin:</span> admin@company.com / admin123
+            </button>
+          </div>
+        </div>
+        <div class="mt-4 text-center">
+          <a class="text-sm text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/docs')">ดูเอกสารระบบ (PRD, Schema, API)</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  $('#loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    doLogin($('#email').value, $('#password').value);
+  });
+}
+function quickLogin(em, pw) { doLogin(em, pw); }
+function doLogin(email, password) {
+  const u = state.users.find(x => x.email === email && x.password === password);
+  if (!u) return toast('อีเมลหรือรหัสผ่านไม่ถูกต้อง', 'error');
+  saveSession({ userId: u.id, name: u.name, email: u.email, role: u.role });
+  session = loadSession();
+  logActivity('login', 'auth', u.id);
+  toast('เข้าสู่ระบบสำเร็จ');
+  if (u.role === 'hr') navigate('/hr/dashboard');
+  else if (u.role === 'executive') navigate('/exec/dashboard');
+  else navigate('/admin/users');
+}
+function logout() {
+  logActivity('logout', 'auth', session?.userId);
+  saveSession(null); navigate('/login');
+}
+
+/* ---------- 8) HR DASHBOARD ---------- */
+function renderHRDashboard(root) {
+  const cands = state.candidates;
+  const total = cands.length;
+  const sentToExec = cands.filter(c => ['sent_to_exec','interview','rejected','other_position'].includes(c.status)).length;
+  const interview = cands.filter(c => c.status === 'interview').length;
+  const pending = cands.filter(c => ['new','evaluated','pending_exec'].includes(c.status)).length;
+
+  const recent = [...cands].sort((a,b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 8);
+
+  const content = `
+    <div class="p-8">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">แดชบอร์ด HR</h1>
+          <p class="text-slate-500 mt-1">สวัสดี ${session.name} — ภาพรวมผู้สมัครงานทั้งหมด</p>
+        </div>
+        <button class="btn-primary" onclick="navigate('/hr/add')">+ เพิ่มผู้สมัครใหม่</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        ${statCard('ผู้สมัครทั้งหมด', total, '👥', 'bg-indigo-50 text-indigo-600')}
+        ${statCard('รอดำเนินการ', pending, '⏳', 'bg-amber-50 text-amber-600')}
+        ${statCard('ส่งให้ผู้บริหาร', sentToExec, '📤', 'bg-violet-50 text-violet-600')}
+        ${statCard('ผ่านสัมภาษณ์', interview, '✅', 'bg-emerald-50 text-emerald-600')}
+      </div>
+
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-slate-800">ผู้สมัครล่าสุด</h2>
+          <a class="text-sm text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/summary')">ดูทั้งหมด →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead><tr>
+              <th>ผู้สมัคร</th><th>ตำแหน่ง</th><th>วันที่เพิ่ม</th><th>% ความเหมาะสม</th><th>สถานะ</th><th></th>
+            </tr></thead>
+            <tbody>
+              ${recent.length === 0 ? `<tr><td colspan="6" class="text-center py-8 text-slate-400">ยังไม่มีผู้สมัคร — <a class="text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/add')">เพิ่มเลย</a></td></tr>`
+              : recent.map(c => candidateRow(c)).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+}
+function statCard(label, value, icon, iconClass) {
+  return `
+    <div class="card p-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm text-slate-500">${label}</div>
+          <div class="text-2xl font-bold text-slate-800 mt-1">${value}</div>
+        </div>
+        <div class="w-11 h-11 rounded-xl ${iconClass} flex items-center justify-center text-xl">${icon}</div>
+      </div>
+    </div>`;
+}
+function candidateRow(c) {
+  const pos = state.positions.find(p => p.id === c.positionId);
+  const score = c.aiResult?.overallScore;
+  return `
+    <tr class="cursor-pointer" onclick="navigate('/hr/candidate/${c.id}')">
+      <td>
+        <div class="font-medium text-slate-800">${c.name}</div>
+        <div class="text-xs text-slate-500">${c.email}</div>
+      </td>
+      <td><div class="text-slate-700">${pos?.title || '-'}</div><div class="text-xs text-slate-500">${pos?.department || ''}</div></td>
+      <td class="text-slate-600">${fmtDateOnly(c.addedAt)}</td>
+      <td>${score != null ? `
+        <div class="flex items-center gap-2">
+          <div class="progress-bar w-24"><div class="progress-fill" style="width:${score}%; background:${matchColor(score)}"></div></div>
+          <span class="font-semibold" style="color:${matchColor(score)}">${score}%</span>
+        </div>` : '<span class="text-slate-400">รอประเมิน</span>'}</td>
+      <td>${statusPill(c.status)}</td>
+      <td><span class="text-slate-400">›</span></td>
+    </tr>`;
+}
+
+/* ---------- 9) ADD CANDIDATE ---------- */
+let _pendingFiles = [];
+function renderAddCandidate(root) {
+  _pendingFiles = [];
+  const positionsOptions = state.positions.map(p => `<option value="${p.id}">${p.title} (${p.department})</option>`).join('');
+  const content = `
+    <div class="p-8 max-w-4xl">
+      <div class="mb-6">
+        <button class="text-sm text-slate-500 hover:text-slate-700" onclick="navigate('/hr/dashboard')">← กลับ</button>
+        <h1 class="text-2xl font-bold text-slate-800 mt-2">เพิ่มผู้สมัครใหม่</h1>
+        <p class="text-slate-500 mt-1">กรอกข้อมูลผู้สมัครและแนบไฟล์ที่เกี่ยวข้อง</p>
+      </div>
+      <form id="addForm" class="space-y-6">
+        <div class="card p-6 space-y-4">
+          <h3 class="font-semibold text-slate-800">ข้อมูลผู้สมัคร</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="label">ชื่อ-นามสกุล *</label><input class="input" id="f_name" required /></div>
+            <div><label class="label">อีเมล *</label><input class="input" type="email" id="f_email" required /></div>
+            <div><label class="label">เบอร์โทร</label><input class="input" id="f_phone" placeholder="08X-XXX-XXXX" /></div>
+            <div><label class="label">ตำแหน่งที่สมัคร *</label><select class="select" id="f_position" required><option value="">— เลือกตำแหน่ง —</option>${positionsOptions}</select></div>
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <h3 class="font-semibold text-slate-800">ข้อมูล Resume / CV</h3>
+          <div>
+            <label class="label">เนื้อหา Resume (พิมพ์/วาง) *</label>
+            <textarea class="textarea" id="f_resume" rows="6" placeholder="วางเนื้อหา resume เช่น ทักษะ ประสบการณ์ การศึกษา..." required></textarea>
+            <p class="text-xs text-slate-500 mt-1">ระบบจะใช้ข้อความนี้ในการวิเคราะห์ AI Matching</p>
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <h3 class="font-semibold text-slate-800">Job Description (JD)</h3>
+          <div>
+            <label class="label">เนื้อหา JD *</label>
+            <textarea class="textarea" id="f_jd" rows="6" placeholder="วางเนื้อหา JD เช่น ทักษะที่ต้องการ ประสบการณ์ การศึกษา..." required></textarea>
+            <button type="button" class="text-xs text-indigo-600 hover:underline" onclick="autoFillJD()">↻ ใช้ JD เริ่มต้นจากตำแหน่งที่เลือก</button>
+          </div>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <h3 class="font-semibold text-slate-800">ความเห็น HR</h3>
+          <textarea class="textarea" id="f_note" rows="3" placeholder="หมายเหตุเบื้องต้นจาก HR..."></textarea>
+        </div>
+
+        <div class="card p-6 space-y-4">
+          <h3 class="font-semibold text-slate-800">แนบไฟล์</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${fileDropBlock('resume','📄 ไฟล์ Resume','PDF, DOCX')}
+            ${fileDropBlock('jd','📋 ไฟล์ JD','PDF, DOCX, TXT')}
+            ${fileDropBlock('audio','🎙️ ไฟล์เสียงสัมภาษณ์','MP3, M4A, WAV')}
+            ${fileDropBlock('compare','📊 ไฟล์เปรียบเทียบผู้สมัคร','XLSX, PDF')}
+          </div>
+          <div id="filesList" class="space-y-2"></div>
+        </div>
+
+        <div class="flex items-center gap-3 justify-end">
+          <button type="button" class="btn-secondary" onclick="navigate('/hr/dashboard')">ยกเลิก</button>
+          <button type="submit" class="btn-primary">บันทึกและประเมิน AI</button>
+        </div>
+      </form>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+  ['resume','jd','audio','compare'].forEach(t => attachFileInput(t));
+  $('#addForm').addEventListener('submit', submitAddCandidate);
+}
+function fileDropBlock(type, label, hint) {
+  return `
+    <label class="file-drop block">
+      <input type="file" class="hidden" data-ftype="${type}" />
+      <div class="text-2xl mb-2">${label.split(' ')[0]}</div>
+      <div class="font-medium text-slate-700">${label}</div>
+      <div class="text-xs text-slate-500 mt-1">${hint}</div>
+      <div class="text-xs text-indigo-600 mt-2">คลิกเพื่ออัปโหลด</div>
+    </label>`;
+}
+function attachFileInput(type) {
+  document.querySelector(`input[data-ftype="${type}"]`)?.addEventListener('change', (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    _pendingFiles.push({ id: uid('f'), type, name: f.name, size: f.size, mime: f.type });
+    refreshFilesList();
+    toast(`แนบไฟล์ ${f.name} แล้ว`);
+  });
+}
+function refreshFilesList() {
+  const el = $('#filesList'); if (!el) return;
+  if (_pendingFiles.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="text-sm font-medium text-slate-700 mt-2">ไฟล์ที่จะแนบ (${_pendingFiles.length})</div>` +
+    _pendingFiles.map(f => `
+      <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center">${fileIcon(f.type)}</div>
+          <div>
+            <div class="text-sm font-medium text-slate-700">${f.name}</div>
+            <div class="text-xs text-slate-500">${f.type.toUpperCase()} • ${sizeFmt(f.size)}</div>
+          </div>
+        </div>
+        <button type="button" class="text-rose-600 hover:text-rose-700 text-sm" onclick="removePending('${f.id}')">ลบ</button>
+      </div>`).join('');
+}
+function removePending(id) { _pendingFiles = _pendingFiles.filter(f => f.id !== id); refreshFilesList(); }
+function fileIcon(type) {
+  const map = { resume:'📄', jd:'📋', audio:'🎙️', compare:'📊' };
+  return `<span class="text-lg">${map[type] || '📎'}</span>`;
+}
+function autoFillJD() {
+  const pid = $('#f_position').value;
+  if (!pid) return toast('เลือกตำแหน่งก่อน', 'warn');
+  const jd = state.jobDescriptions.find(j => j.positionId === pid);
+  if (jd) { $('#f_jd').value = jd.text; toast('ดึง JD เริ่มต้นแล้ว'); }
+}
+function submitAddCandidate(e) {
+  e.preventDefault();
+  const positionId = $('#f_position').value;
+  if (!positionId) return toast('กรุณาเลือกตำแหน่ง', 'error');
+  const resumeText = $('#f_resume').value.trim();
+  const jdText = $('#f_jd').value.trim();
+  const aiResult = runAIMatching(resumeText, jdText);
+
+  const jdEntry = { id: uid('jd'), positionId, text: jdText, createdAt: new Date().toISOString() };
+  state.jobDescriptions.push(jdEntry);
+
+  const cand = {
+    id: uid('c'), name: $('#f_name').value.trim(), email: $('#f_email').value.trim(), phone: $('#f_phone').value.trim(),
+    positionId, jdId: jdEntry.id, addedBy: session.userId, addedAt: new Date().toISOString(),
+    resumeText, hrNote: $('#f_note').value.trim(),
+    status: 'evaluated', files: [..._pendingFiles], aiResult, hrReview: null, executiveReview: null, assignment: null,
+  };
+  state.candidates.unshift(cand);
+  saveState(state);
+  logActivity('create_candidate', 'candidate', cand.id, { name: cand.name, score: aiResult.overallScore });
+  toast(`เพิ่มผู้สมัครและประเมิน AI สำเร็จ (${aiResult.overallScore}%)`);
+  navigate(`/hr/candidate/${cand.id}`);
+}
+
+/* ---------- 10) CANDIDATE DETAIL ---------- */
+function renderCandidateDetail(root, id) {
+  const c = state.candidates.find(x => x.id === id);
+  if (!c) { root.innerHTML = shell('<div class="p-8">ไม่พบผู้สมัคร</div>', HR_NAV, 'พื้นที่ HR'); return; }
+  const pos = state.positions.find(p => p.id === c.positionId);
+  const jd = state.jobDescriptions.find(j => j.id === c.jdId);
+  const ai = c.aiResult;
+  const exec = state.users.filter(u => u.role === 'executive');
+  const assignedExec = c.assignment ? state.users.find(u => u.id === c.assignment.executiveId) : null;
+  const submittedBy = c.assignment ? state.users.find(u => u.id === c.assignment.submittedBy) : null;
+
+  const content = `
+    <div class="p-8">
+      <button class="text-sm text-slate-500 hover:text-slate-700 mb-4" onclick="navigate('/hr/dashboard')">← กลับ Dashboard</button>
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="w-14 h-14 rounded-2xl brand-gradient text-white flex items-center justify-center font-bold text-xl">
+              ${c.name.split(' ').map(s=>s[0]).slice(0,2).join('')}
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">${c.name}</h1>
+              <div class="text-slate-500 mt-1">${pos?.title || '-'} • ${pos?.department || ''} • ${c.email} • ${c.phone || '-'}</div>
+              <div class="mt-2">${statusPill(c.status)} <span class="text-xs text-slate-500 ml-2">เพิ่มเมื่อ ${fmt(c.addedAt)}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          ${c.status === 'sent_to_exec' || c.status === 'interview' || c.status === 'rejected' || c.status === 'other_position' ? '' :
+          `<button class="btn-primary" onclick="openSendToExec('${c.id}')">📤 ส่งให้ผู้บริหาร</button>`}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          ${ai ? aiResultCard(ai) : '<div class="card p-6 text-center text-slate-400">ยังไม่มีผลการประเมิน AI</div>'}
+
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-slate-800">📋 Job Description</h3>
+            </div>
+            <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${jd?.text || '-'}</div>
+          </div>
+
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-slate-800">📄 Resume / CV</h3>
+            </div>
+            <div class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${c.resumeText || '-'}</div>
+          </div>
+
+          <div class="card p-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-slate-800">💬 ความเห็นของ HR</h3>
+              <button class="text-sm text-indigo-600 hover:underline" onclick="editHRNote('${c.id}')">${c.hrNote ? 'แก้ไข' : 'เพิ่ม'}</button>
+            </div>
+            <div id="hrNoteView" class="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">${c.hrNote || '<span class="text-slate-400">ยังไม่มีความเห็น</span>'}</div>
+          </div>
+
+          ${c.executiveReview ? executiveReviewCard(c) : ''}
+        </div>
+
+        <div class="space-y-6">
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">📎 ไฟล์แนบ (${c.files.length})</h3>
+            ${c.files.length === 0 ? '<div class="text-sm text-slate-400">ยังไม่มีไฟล์แนบ</div>' :
+              c.files.map(f => `
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 mb-2">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0">${fileIcon(f.type)}</div>
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium text-slate-700 truncate">${f.name}</div>
+                      <div class="text-xs text-slate-500">${f.type.toUpperCase()} • ${sizeFmt(f.size)}</div>
+                    </div>
+                  </div>
+                  <button class="text-xs text-indigo-600 hover:underline flex-shrink-0" onclick="toast('Demo: ดาวน์โหลด ${f.name}')">ดาวน์โหลด</button>
+                </div>`).join('')}
+          </div>
+
+          ${c.assignment ? `
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">📤 ข้อมูลการมอบหมาย</h3>
+            <div class="space-y-2 text-sm">
+              <div><span class="text-slate-500">ส่งโดย:</span> <span class="font-medium text-slate-700">${submittedBy?.name || '-'}</span></div>
+              <div><span class="text-slate-500">ผู้บริหารที่ได้รับมอบหมาย:</span> <span class="font-medium text-slate-700">${assignedExec?.name || '-'}</span></div>
+              <div><span class="text-slate-500">วันที่ส่ง:</span> <span class="font-medium text-slate-700">${fmt(c.assignment.submittedAt)}</span></div>
+              ${c.executiveReview ? `<div><span class="text-slate-500">วันที่ประเมิน:</span> <span class="font-medium text-slate-700">${fmt(c.executiveReview.evaluatedAt)}</span></div>` : ''}
+            </div>
+          </div>` : ''}
+
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">⚡ การกระทำด่วน</h3>
+            <div class="space-y-2">
+              ${c.aiResult ? `<button class="w-full text-left btn-secondary" onclick="rerunAI('${c.id}')">↻ ประเมิน AI ใหม่</button>` : ''}
+              <button class="w-full text-left btn-secondary" onclick="changeStatus('${c.id}')">⚙️ เปลี่ยนสถานะด้วยตนเอง</button>
+              <button class="w-full text-left btn-secondary text-rose-600" onclick="deleteCandidate('${c.id}')">🗑️ ลบผู้สมัคร</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+}
+function aiResultCard(ai) {
+  return `
+    <div class="card p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="font-semibold text-slate-800">🤖 ผลการเปรียบเทียบ AI</h3>
+          <div class="text-xs text-slate-500 mt-1">ประเมินเมื่อ ${fmt(ai.computedAt)}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 mb-6">
+        <div class="relative w-32 h-32 flex-shrink-0">
+          <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90">
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" stroke-width="2.5"/>
+            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${matchColor(ai.overallScore)}" stroke-width="2.5" stroke-dasharray="${ai.overallScore}, 100" stroke-linecap="round"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="text-3xl font-bold" style="color:${matchColor(ai.overallScore)}">${ai.overallScore}%</div>
+            <div class="text-xs text-slate-500">${matchLabel(ai.overallScore)}</div>
+          </div>
+        </div>
+        <div class="flex-1 space-y-3">
+          ${miniBar('ทักษะ (Skills)', ai.skillScore)}
+          ${miniBar('ประสบการณ์', ai.expScore)}
+          ${miniBar('การศึกษา', ai.eduScore)}
+        </div>
+      </div>
+      <div class="text-sm text-slate-700 leading-relaxed mb-4 p-4 rounded-lg bg-indigo-50 border border-indigo-100">
+        <div class="font-semibold text-indigo-900 mb-1">📝 สรุปจาก AI</div>
+        ${ai.summary}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <div class="text-sm font-semibold text-emerald-700 mb-2">✓ จุดแข็ง</div>
+          <ul class="space-y-1 text-sm text-slate-600">${ai.pros.map(p => `<li>• ${p}</li>`).join('')}</ul>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-rose-700 mb-2">✗ จุดที่ยังขาด</div>
+          <ul class="space-y-1 text-sm text-slate-600">${ai.cons.map(p => `<li>• ${p}</li>`).join('') || '<li class="text-slate-400">— ไม่มี —</li>'}</ul>
+        </div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-slate-700 mb-2">ทักษะที่ตรงกับ JD</div>
+        <div>${ai.matchedSkills.length === 0 ? '<span class="text-slate-400 text-sm">— ไม่พบ —</span>' :
+          ai.matchedSkills.map(s => `<span class="badge-skill">${s}</span>`).join('')}</div>
+        ${ai.missingSkills.length > 0 ? `
+        <div class="text-sm font-semibold text-slate-700 mb-2 mt-3">ทักษะที่ JD ต้องการแต่ Resume ยังขาด</div>
+        <div>${ai.missingSkills.map(s => `<span class="badge-skill badge-missing">${s}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
+        <div class="text-sm"><span class="font-semibold text-slate-700">คำแนะนำ:</span> <span class="text-slate-700">${ai.recommendation}</span></div>
+      </div>
+    </div>`;
+}
+function miniBar(label, val) {
+  return `<div>
+    <div class="flex items-center justify-between text-xs mb-1">
+      <span class="text-slate-600">${label}</span>
+      <span class="font-semibold" style="color:${matchColor(val)}">${val}%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${val}%; background:${matchColor(val)}"></div></div>
+  </div>`;
+}
+function executiveReviewCard(c) {
+  const er = c.executiveReview;
+  const reviewer = state.users.find(u => u.id === er.reviewerId);
+  const decisionColor = { interview: 'emerald', rejected: 'rose', other_position: 'orange' };
+  const decisionLabel = { interview: 'นัดสัมภาษณ์', rejected: 'ไม่ผ่าน', other_position: 'เหมาะกับตำแหน่งอื่น' };
+  const cl = decisionColor[er.decision];
+  return `
+    <div class="card p-6 border-l-4 border-${cl}-500">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-slate-800">👔 ผลการประเมินจากผู้บริหาร</h3>
+        <span class="pill bg-${cl}-100 text-${cl}-700">${decisionLabel[er.decision]}</span>
+      </div>
+      <div class="text-sm text-slate-600 leading-relaxed mb-3 whitespace-pre-wrap">${er.comment || '<span class="text-slate-400">— ไม่มีความเห็น —</span>'}</div>
+      <div class="text-xs text-slate-500">โดย ${reviewer?.name || '-'} • ${fmt(er.evaluatedAt)}</div>
+    </div>`;
+}
+
+function editHRNote(id) {
+  const c = state.candidates.find(x => x.id === id);
+  modal({
+    title: 'แก้ไขความเห็น HR',
+    body: `<textarea class="textarea" id="m_note" rows="6">${c.hrNote || ''}</textarea>`,
+    onSave: () => {
+      c.hrNote = $('#m_note').value.trim();
+      saveState(state); logActivity('update_hr_note','candidate',c.id);
+      toast('บันทึกความเห็นแล้ว'); render();
+    },
+  });
+}
+function rerunAI(id) {
+  const c = state.candidates.find(x => x.id === id);
+  const jd = state.jobDescriptions.find(j => j.id === c.jdId);
+  c.aiResult = runAIMatching(c.resumeText, jd?.text || '');
+  saveState(state); logActivity('rerun_ai','candidate',c.id);
+  toast('ประเมิน AI ใหม่แล้ว'); render();
+}
+function changeStatus(id) {
+  const c = state.candidates.find(x => x.id === id);
+  modal({
+    title: 'เปลี่ยนสถานะผู้สมัคร',
+    body: `<select class="select" id="m_status">
+      ${Object.entries(STATUS_LABELS).map(([k,v]) => `<option value="${k}" ${c.status===k?'selected':''}>${v.label}</option>`).join('')}
+    </select>`,
+    onSave: () => {
+      c.status = $('#m_status').value; saveState(state);
+      logActivity('change_status','candidate',c.id, { status: c.status });
+      toast('เปลี่ยนสถานะแล้ว'); render();
+    },
+  });
+}
+function deleteCandidate(id) {
+  if (!confirm('ยืนยันลบผู้สมัครรายนี้?')) return;
+  state.candidates = state.candidates.filter(x => x.id !== id);
+  saveState(state); logActivity('delete_candidate','candidate',id);
+  toast('ลบแล้ว'); navigate('/hr/dashboard');
+}
+
+/* ---------- 11) SEND TO EXECUTIVE ---------- */
+function openSendToExec(id) {
+  const c = state.candidates.find(x => x.id === id);
+  const execs = state.users.filter(u => u.role === 'executive');
+  modal({
+    title: 'ส่งผู้สมัครให้ผู้บริหารประเมิน',
+    body: `
+      <div class="space-y-4">
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-sm">
+          <div class="font-semibold text-slate-700">${c.name}</div>
+          <div class="text-slate-500">${state.positions.find(p=>p.id===c.positionId)?.title}</div>
+          <div class="mt-1">AI Match: <span class="font-semibold" style="color:${matchColor(c.aiResult?.overallScore||0)}">${c.aiResult?.overallScore||0}%</span></div>
+        </div>
+        <div>
+          <label class="label">เลือกผู้บริหารที่จะมอบหมาย *</label>
+          <select class="select" id="m_exec">
+            <option value="">— เลือกผู้บริหาร —</option>
+            ${execs.map(e => `<option value="${e.id}">${e.name} (${e.email})</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="label">หมายเหตุถึงผู้บริหาร (ไม่บังคับ)</label>
+          <textarea class="textarea" id="m_msg" rows="3"></textarea>
+        </div>
+      </div>`,
+    onSave: () => {
+      const eid = $('#m_exec').value;
+      if (!eid) { toast('กรุณาเลือกผู้บริหาร', 'error'); return false; }
+      const now = new Date().toISOString();
+      c.assignment = {
+        executiveId: eid, submittedBy: session.userId, submittedAt: now,
+        message: $('#m_msg').value.trim(),
+      };
+      c.status = 'sent_to_exec';
+      state.reviewAssignments.push({
+        id: uid('a'), candidateId: c.id, executiveId: eid, hrId: session.userId,
+        assignedAt: now, status: 'pending',
+      });
+      saveState(state);
+      logActivity('send_to_exec','candidate',c.id, { executiveId: eid });
+      toast('ส่งให้ผู้บริหารแล้ว'); render();
+    },
+  });
+}
+
+/* ---------- 12) HR SUMMARY (FINAL DASHBOARD) ---------- */
+function renderHRSummary(root) {
+  const positions = state.positions;
+  const execs = state.users.filter(u => u.role === 'executive');
+  const content = `
+    <div class="p-8">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">สรุปผู้สมัครทั้งหมด</h1>
+          <p class="text-slate-500 mt-1">รวมข้อมูลผู้สมัคร ผลประเมิน HR และผู้บริหาร พร้อม Filter</p>
+        </div>
+        <button class="btn-secondary" onclick="exportSummaryCSV()">⬇️ Export CSV</button>
+      </div>
+      <div class="card p-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+          <input class="input md:col-span-2" id="flt_search" placeholder="🔍 ค้นหาชื่อผู้สมัคร..." />
+          <select class="select" id="flt_pos"><option value="">ทุกตำแหน่ง</option>${positions.map(p=>`<option value="${p.id}">${p.title}</option>`).join('')}</select>
+          <select class="select" id="flt_status">
+            <option value="">ทุกสถานะ</option>
+            ${Object.entries(STATUS_LABELS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('')}
+          </select>
+          <select class="select" id="flt_exec"><option value="">ผู้บริหารทั้งหมด</option>${execs.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select>
+          <select class="select" id="flt_sort">
+            <option value="date_desc">ใหม่ → เก่า</option>
+            <option value="date_asc">เก่า → ใหม่</option>
+            <option value="match_desc">% มาก → น้อย</option>
+            <option value="match_asc">% น้อย → มาก</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <input class="input" type="date" id="flt_from" placeholder="วันที่เริ่ม" />
+          <input class="input" type="date" id="flt_to" placeholder="วันที่สิ้นสุด" />
+        </div>
+      </div>
+      <div class="card overflow-x-auto">
+        <table class="table" id="summaryTable"></table>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+  ['flt_search','flt_pos','flt_status','flt_exec','flt_sort','flt_from','flt_to'].forEach(id =>
+    document.getElementById(id).addEventListener('input', refreshSummary));
+  refreshSummary();
+}
+function getFilteredCandidates() {
+  const q = ($('#flt_search')?.value || '').toLowerCase();
+  const pos = $('#flt_pos')?.value || '';
+  const st = $('#flt_status')?.value || '';
+  const ex = $('#flt_exec')?.value || '';
+  const from = $('#flt_from')?.value;
+  const to = $('#flt_to')?.value;
+  const sort = $('#flt_sort')?.value || 'date_desc';
+
+  let arr = state.candidates.filter(c => {
+    if (q && !c.name.toLowerCase().includes(q)) return false;
+    if (pos && c.positionId !== pos) return false;
+    if (st && c.status !== st) return false;
+    if (ex && c.assignment?.executiveId !== ex) return false;
+    if (from && c.addedAt < from) return false;
+    if (to && c.addedAt > to + 'T23:59:59') return false;
+    return true;
+  });
+  arr.sort((a,b) => {
+    if (sort === 'date_desc') return b.addedAt.localeCompare(a.addedAt);
+    if (sort === 'date_asc') return a.addedAt.localeCompare(b.addedAt);
+    if (sort === 'match_desc') return (b.aiResult?.overallScore||0) - (a.aiResult?.overallScore||0);
+    if (sort === 'match_asc') return (a.aiResult?.overallScore||0) - (b.aiResult?.overallScore||0);
+    return 0;
+  });
+  return arr;
+}
+function refreshSummary() {
+  const arr = getFilteredCandidates();
+  const tbl = $('#summaryTable');
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>ผู้สมัคร</th><th>ตำแหน่ง</th><th>%</th>
+      <th>HR Note</th><th>ส่งให้ exec</th><th>ผู้บริหาร</th>
+      <th>ผลประเมิน</th><th>ประเมินเมื่อ</th><th>สถานะ</th><th>ไฟล์</th>
+    </tr></thead>
+    <tbody>
+      ${arr.length === 0 ? `<tr><td colspan="10" class="text-center py-8 text-slate-400">ไม่พบข้อมูล</td></tr>` :
+      arr.map(c => {
+        const pos = state.positions.find(p => p.id === c.positionId);
+        const exec = c.assignment ? state.users.find(u => u.id === c.assignment.executiveId) : null;
+        const er = c.executiveReview;
+        const decisionMap = { interview:'นัดสัมภาษณ์', rejected:'ไม่ผ่าน', other_position:'ตำแหน่งอื่น' };
+        const score = c.aiResult?.overallScore;
+        return `
+          <tr class="cursor-pointer" onclick="navigate('/hr/candidate/${c.id}')">
+            <td><div class="font-medium text-slate-800">${c.name}</div><div class="text-xs text-slate-500">${c.email}</div></td>
+            <td class="text-slate-700">${pos?.title || '-'}</td>
+            <td>${score!=null ? `<span class="font-semibold" style="color:${matchColor(score)}">${score}%</span>` : '<span class="text-slate-400">-</span>'}</td>
+            <td class="text-xs text-slate-600 max-w-[180px] truncate">${c.hrNote || '<span class="text-slate-400">-</span>'}</td>
+            <td class="text-xs text-slate-600">${c.assignment ? fmtDateOnly(c.assignment.submittedAt) : '-'}</td>
+            <td class="text-xs text-slate-700">${exec?.name || '-'}</td>
+            <td>${er ? `<span class="pill bg-slate-100 text-slate-700">${decisionMap[er.decision]}</span>` : '<span class="text-slate-400">-</span>'}</td>
+            <td class="text-xs text-slate-600">${er ? fmtDateOnly(er.evaluatedAt) : '-'}</td>
+            <td>${statusPill(c.status)}</td>
+            <td class="text-xs"><span class="pill bg-slate-100 text-slate-600">${c.files.length} ไฟล์</span></td>
+          </tr>`;
+      }).join('')}
+    </tbody>`;
+}
+function exportSummaryCSV() {
+  const arr = getFilteredCandidates();
+  const decisionMap = { interview:'นัดสัมภาษณ์', rejected:'ไม่ผ่าน', other_position:'เหมาะกับตำแหน่งอื่น' };
+  const rows = [['ชื่อ','อีเมล','ตำแหน่ง','%','HR Note','ส่งให้ผู้บริหาร','วันที่ส่ง','ผลประเมิน','วันประเมิน','สถานะ']];
+  arr.forEach(c => {
+    const pos = state.positions.find(p => p.id === c.positionId);
+    const exec = c.assignment ? state.users.find(u => u.id === c.assignment.executiveId) : null;
+    rows.push([
+      c.name, c.email, pos?.title||'', c.aiResult?.overallScore||'',
+      c.hrNote||'', exec?.name||'', c.assignment?fmtDateOnly(c.assignment.submittedAt):'',
+      c.executiveReview?decisionMap[c.executiveReview.decision]:'',
+      c.executiveReview?fmtDateOnly(c.executiveReview.evaluatedAt):'',
+      STATUS_LABELS[c.status]?.label||'',
+    ]);
+  });
+  const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `candidates_summary_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  toast('ดาวน์โหลด CSV แล้ว');
+}
+
+/* ---------- 13) EXECUTIVE DASHBOARD ---------- */
+function renderExecDashboard(root) {
+  const myAssigned = state.candidates.filter(c => c.assignment?.executiveId === session.userId);
+  const pending = myAssigned.filter(c => !c.executiveReview);
+  const reviewed = myAssigned.filter(c => c.executiveReview);
+
+  const content = `
+    <div class="p-8">
+      <h1 class="text-2xl font-bold text-slate-800 mb-1">รายการผู้สมัครรอประเมิน</h1>
+      <p class="text-slate-500 mb-6">สวัสดี ${session.name} — มีผู้สมัครรอประเมิน <strong>${pending.length}</strong> ราย</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        ${statCard('ที่ต้องประเมิน', pending.length, '⏳', 'bg-amber-50 text-amber-600')}
+        ${statCard('ประเมินไปแล้ว', reviewed.length, '✓', 'bg-emerald-50 text-emerald-600')}
+        ${statCard('ทั้งหมดที่มอบหมาย', myAssigned.length, '📋', 'bg-indigo-50 text-indigo-600')}
+      </div>
+
+      <div class="card p-6 mb-6">
+        <h2 class="font-semibold text-slate-800 mb-4">รอการประเมิน (${pending.length})</h2>
+        ${pending.length === 0 ? '<div class="text-center py-8 text-slate-400">ไม่มีผู้สมัครรอประเมิน</div>' :
+        `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${pending.map(c => execCardItem(c)).join('')}</div>`}
+      </div>
+
+      ${reviewed.length > 0 ? `
+      <div class="card p-6">
+        <h2 class="font-semibold text-slate-800 mb-4">ประเมินไปแล้ว (${reviewed.length})</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${reviewed.map(c => execCardItem(c, true)).join('')}</div>
+      </div>` : ''}
+    </div>`;
+  root.innerHTML = shell(content, EXEC_NAV, 'พื้นที่ผู้บริหาร');
+}
+function execCardItem(c, done=false) {
+  const pos = state.positions.find(p => p.id === c.positionId);
+  const score = c.aiResult?.overallScore || 0;
+  const er = c.executiveReview;
+  const decisionMap = { interview:['นัดสัมภาษณ์','emerald'], rejected:['ไม่ผ่าน','rose'], other_position:['ตำแหน่งอื่น','orange'] };
+  return `
+    <div class="border border-slate-200 rounded-xl p-4 hover:border-indigo-300 cursor-pointer transition" onclick="navigate('/exec/review/${c.id}')">
+      <div class="flex items-start justify-between mb-2">
+        <div>
+          <div class="font-semibold text-slate-800">${c.name}</div>
+          <div class="text-sm text-slate-500">${pos?.title}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-lg" style="color:${matchColor(score)}">${score}%</div>
+          <div class="text-xs text-slate-400">AI Match</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-500 mb-2">ส่งโดย ${state.users.find(u=>u.id===c.assignment?.submittedBy)?.name||'-'} • ${fmt(c.assignment?.submittedAt)}</div>
+      ${done && er ? `<span class="pill bg-${decisionMap[er.decision][1]}-100 text-${decisionMap[er.decision][1]}-700">${decisionMap[er.decision][0]}</span>` :
+        '<span class="pill bg-amber-100 text-amber-700">รอประเมิน</span>'}
+    </div>`;
+}
+
+/* ---------- 14) EXECUTIVE REVIEW ---------- */
+function renderExecReview(root, id) {
+  const c = state.candidates.find(x => x.id === id);
+  if (!c || c.assignment?.executiveId !== session.userId) {
+    root.innerHTML = shell('<div class="p-8">ไม่พบหรือไม่มีสิทธิ์เข้าถึง</div>', EXEC_NAV, 'พื้นที่ผู้บริหาร'); return;
+  }
+  const pos = state.positions.find(p => p.id === c.positionId);
+  const jd = state.jobDescriptions.find(j => j.id === c.jdId);
+  const ai = c.aiResult;
+  const submitter = state.users.find(u => u.id === c.assignment.submittedBy);
+  const er = c.executiveReview;
+
+  const content = `
+    <div class="p-8">
+      <button class="text-sm text-slate-500 hover:text-slate-700 mb-4" onclick="navigate('/exec/dashboard')">← กลับ</button>
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">${c.name}</h1>
+          <div class="text-slate-500 mt-1">${pos?.title} • ${pos?.department}</div>
+          <div class="text-xs text-slate-400 mt-1">ส่งโดย ${submitter?.name} • ${fmt(c.assignment.submittedAt)}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          ${ai ? aiResultCard(ai) : ''}
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">📋 Job Description</h3>
+            <div class="text-sm text-slate-600 whitespace-pre-wrap">${jd?.text || '-'}</div>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">📄 Resume / CV</h3>
+            <div class="text-sm text-slate-600 whitespace-pre-wrap">${c.resumeText || '-'}</div>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">💬 ความเห็นของ HR</h3>
+            <div class="text-sm text-slate-600 whitespace-pre-wrap">${c.hrNote || '<span class="text-slate-400">— ไม่มี —</span>'}</div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="card p-6 sticky top-6">
+            <h3 class="font-semibold text-slate-800 mb-4">ผลการพิจารณา</h3>
+            ${er ? `
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 mb-3">
+                <div class="text-xs text-slate-500">ประเมินไปแล้วเมื่อ</div>
+                <div class="text-sm text-slate-700">${fmt(er.evaluatedAt)}</div>
+                <div class="mt-2 text-sm font-semibold text-slate-700">${{interview:'นัดสัมภาษณ์',rejected:'ไม่ผ่าน',other_position:'เหมาะกับตำแหน่งอื่น'}[er.decision]}</div>
+                <div class="mt-2 text-sm text-slate-600 whitespace-pre-wrap">${er.comment || ''}</div>
+              </div>
+              <button class="btn-secondary w-full" onclick="document.getElementById('reEval').classList.toggle('hidden')">↻ ประเมินใหม่</button>
+              <div id="reEval" class="hidden mt-3 space-y-3">
+                ${decisionRadios(er.decision)}
+                <textarea class="textarea" id="ex_comment" rows="4">${er.comment||''}</textarea>
+                <button class="btn-primary w-full" onclick="submitExecReview('${c.id}')">บันทึกการประเมินใหม่</button>
+              </div>
+            ` : `
+              ${decisionRadios()}
+              <div class="mt-3">
+                <label class="label">ความเห็นเพิ่มเติม</label>
+                <textarea class="textarea" id="ex_comment" rows="5" placeholder="เหตุผลและความเห็นของผู้บริหาร..."></textarea>
+              </div>
+              <button class="btn-primary w-full mt-4" onclick="submitExecReview('${c.id}')">ยืนยันการประเมิน</button>
+            `}
+          </div>
+          <div class="card p-6">
+            <h3 class="font-semibold text-slate-800 mb-3">📎 ไฟล์แนบ</h3>
+            ${c.files.length === 0 ? '<div class="text-sm text-slate-400">ไม่มีไฟล์</div>' :
+              c.files.map(f => `
+                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 mb-2">
+                  <div class="flex items-center gap-2 min-w-0">${fileIcon(f.type)}<span class="text-sm text-slate-700 truncate">${f.name}</span></div>
+                  <button class="text-xs text-indigo-600" onclick="toast('Demo: ดูไฟล์ ${f.name}')">ดู</button>
+                </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, EXEC_NAV, 'พื้นที่ผู้บริหาร');
+}
+function decisionRadios(selected='') {
+  const opts = [
+    { v:'interview', label:'✓ นัดสัมภาษณ์', desc:'ผู้สมัครเหมาะสมกับตำแหน่ง', cls:'emerald' },
+    { v:'rejected', label:'✗ ไม่ผ่าน', desc:'ไม่เหมาะกับตำแหน่งหรือบริษัท', cls:'rose' },
+    { v:'other_position', label:'↻ เหมาะกับตำแหน่งอื่น', desc:'มีศักยภาพ แต่ตำแหน่งอื่นเหมาะกว่า', cls:'orange' },
+  ];
+  return opts.map(o => `
+    <label class="block border-2 rounded-xl p-3 cursor-pointer hover:border-${o.cls}-400 transition ${selected===o.v?`border-${o.cls}-500 bg-${o.cls}-50`:'border-slate-200'}">
+      <input type="radio" name="decision" value="${o.v}" class="hidden" ${selected===o.v?'checked':''} />
+      <div class="font-medium text-slate-800">${o.label}</div>
+      <div class="text-xs text-slate-500 mt-1">${o.desc}</div>
+    </label>`).join('');
+}
+function submitExecReview(id) {
+  const sel = document.querySelector('input[name="decision"]:checked');
+  if (!sel) return toast('กรุณาเลือกผลการพิจารณา', 'error');
+  const c = state.candidates.find(x => x.id === id);
+  c.executiveReview = {
+    reviewerId: session.userId, decision: sel.value,
+    comment: $('#ex_comment').value.trim(), evaluatedAt: new Date().toISOString(),
+  };
+  c.status = sel.value;
+  const a = state.reviewAssignments.find(x => x.candidateId === c.id && x.executiveId === session.userId);
+  if (a) a.status = 'done';
+  saveState(state);
+  logActivity('exec_review','candidate',c.id, { decision: sel.value });
+  toast('บันทึกการประเมินแล้ว');
+  navigate('/exec/dashboard');
+}
+
+/* ---------- 15) ADMIN PAGES ---------- */
+function renderAdminUsers(root) {
+  const content = `
+    <div class="p-8">
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">จัดการผู้ใช้</h1>
+          <p class="text-slate-500 mt-1">เพิ่ม/แก้ไข/ลบ ผู้ใช้และกำหนดสิทธิ์</p>
+        </div>
+        <button class="btn-primary" onclick="addUserModal()">+ เพิ่มผู้ใช้</button>
+      </div>
+      <div class="card overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>ชื่อ</th><th>อีเมล</th><th>Role</th><th></th></tr></thead>
+          <tbody>
+            ${state.users.map(u => `
+              <tr>
+                <td class="font-medium">${u.name}</td>
+                <td class="text-slate-600">${u.email}</td>
+                <td><span class="pill ${u.role==='admin'?'bg-rose-100 text-rose-700':u.role==='executive'?'bg-violet-100 text-violet-700':'bg-indigo-100 text-indigo-700'}">${u.role.toUpperCase()}</span></td>
+                <td><button class="text-rose-600 text-sm" onclick="deleteUser('${u.id}')">ลบ</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, ADMIN_NAV, 'พื้นที่ Admin');
+}
+function addUserModal() {
+  modal({
+    title: 'เพิ่มผู้ใช้',
+    body: `
+      <div class="space-y-3">
+        <div><label class="label">ชื่อ</label><input class="input" id="u_name" /></div>
+        <div><label class="label">อีเมล</label><input class="input" type="email" id="u_email" /></div>
+        <div><label class="label">รหัสผ่าน</label><input class="input" id="u_pw" /></div>
+        <div><label class="label">Role</label><select class="select" id="u_role">
+          <option value="hr">HR</option><option value="executive">Executive</option><option value="admin">Admin</option>
+        </select></div>
+      </div>`,
+    onSave: () => {
+      state.users.push({ id: uid('u'), name: $('#u_name').value, email: $('#u_email').value, password: $('#u_pw').value, role: $('#u_role').value });
+      saveState(state); logActivity('create_user','user'); toast('เพิ่มผู้ใช้แล้ว'); render();
+    },
+  });
+}
+function deleteUser(id) {
+  if (!confirm('ยืนยันลบผู้ใช้?')) return;
+  state.users = state.users.filter(u => u.id !== id);
+  saveState(state); logActivity('delete_user','user',id); toast('ลบแล้ว'); render();
+}
+function renderAdminPositions(root) {
+  const content = `
+    <div class="p-8">
+      <div class="flex items-start justify-between mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">ตำแหน่งงาน</h1><p class="text-slate-500 mt-1">จัดการตำแหน่งและ JD เริ่มต้น</p></div>
+        <button class="btn-primary" onclick="addPositionModal()">+ เพิ่มตำแหน่ง</button>
+      </div>
+      <div class="card overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>ตำแหน่ง</th><th>แผนก</th><th>JD</th><th></th></tr></thead>
+          <tbody>${state.positions.map(p => {
+            const jd = state.jobDescriptions.find(j => j.positionId === p.id);
+            return `<tr>
+              <td class="font-medium">${p.title}</td>
+              <td class="text-slate-600">${p.department}</td>
+              <td class="text-xs text-slate-500 max-w-md truncate">${jd?.text?.slice(0,120) || '-'}</td>
+              <td><button class="text-rose-600 text-sm" onclick="deletePosition('${p.id}')">ลบ</button></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, ADMIN_NAV, 'พื้นที่ Admin');
+}
+function addPositionModal() {
+  modal({
+    title: 'เพิ่มตำแหน่ง',
+    body: `<div class="space-y-3">
+      <div><label class="label">ชื่อตำแหน่ง</label><input class="input" id="p_title" /></div>
+      <div><label class="label">แผนก</label><input class="input" id="p_dept" /></div>
+      <div><label class="label">JD เริ่มต้น</label><textarea class="textarea" id="p_jd" rows="4"></textarea></div>
+    </div>`,
+    onSave: () => {
+      const p = { id: uid('p'), title: $('#p_title').value, department: $('#p_dept').value };
+      state.positions.push(p);
+      state.jobDescriptions.push({ id: uid('jd'), positionId: p.id, text: $('#p_jd').value });
+      saveState(state); logActivity('create_position','position'); toast('เพิ่มตำแหน่งแล้ว'); render();
+    },
+  });
+}
+function deletePosition(id) {
+  if (!confirm('ยืนยันลบตำแหน่ง?')) return;
+  state.positions = state.positions.filter(p => p.id !== id);
+  saveState(state); render();
+}
+function renderActivityLog(root) {
+  const navItems = session.role === 'admin' ? ADMIN_NAV : HR_NAV;
+  const title = session.role === 'admin' ? 'พื้นที่ Admin' : 'พื้นที่ HR';
+  const content = `
+    <div class="p-8">
+      <h1 class="text-2xl font-bold text-slate-800 mb-1">Activity Log</h1>
+      <p class="text-slate-500 mb-6">บันทึกการกระทำในระบบ (ล่าสุด ${state.activityLogs.length} รายการ)</p>
+      <div class="card overflow-x-auto">
+        <table class="table">
+          <thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>Role</th><th>Action</th><th>Entity</th><th>Meta</th></tr></thead>
+          <tbody>
+            ${state.activityLogs.length === 0 ? `<tr><td colspan="6" class="text-center py-8 text-slate-400">ไม่มี log</td></tr>` :
+            state.activityLogs.slice(0,200).map(l => `<tr>
+              <td class="text-xs text-slate-500">${fmt(l.timestamp)}</td>
+              <td class="font-medium">${l.userName||'-'}</td>
+              <td><span class="pill bg-slate-100 text-slate-700">${l.role}</span></td>
+              <td><code class="text-xs">${l.action}</code></td>
+              <td class="text-slate-600 text-sm">${l.entity}${l.entityId?` <span class="text-slate-400">(${l.entityId.slice(0,8)})</span>`:''}</td>
+              <td class="text-xs text-slate-500">${JSON.stringify(l.meta||{}).slice(0,80)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, navItems, title);
+}
+
+/* ---------- 16) MODAL ---------- */
+function modal({ title, body, onSave, saveLabel='บันทึก' }) {
+  const root = $('#modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="font-semibold text-slate-800">${title}</h3>
+          <button class="text-slate-400 hover:text-slate-700" onclick="closeModal()">✕</button>
+        </div>
+        <div class="p-6">${body}</div>
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+          <button class="btn-secondary" onclick="closeModal()">ยกเลิก</button>
+          <button class="btn-primary" id="modalSaveBtn">${saveLabel}</button>
+        </div>
+      </div>
+    </div>`;
+  $('#modalSaveBtn').onclick = () => {
+    const r = onSave?.();
+    if (r !== false) closeModal();
+  };
+}
+function closeModal() { $('#modal-root').innerHTML = ''; }
+
+/* ---------- 17) DOCS ---------- */
+function renderDocs(root) {
+  const content = `
+    <div class="min-h-screen flex">
+      <aside class="w-64 bg-white border-r border-slate-200 p-4 overflow-auto">
+        <div class="flex items-center gap-2 px-2 mb-4">
+          <div class="w-9 h-9 rounded-xl brand-gradient flex items-center justify-center text-white font-bold">T</div>
+          <div><div class="font-bold text-slate-800">Thairung Group Recruitment System</div><div class="text-xs text-slate-500">เอกสารระบบ</div></div>
+        </div>
+        <nav class="space-y-1 text-sm">
+          ${[
+            ['overview','📌 ภาพรวม'], ['prd','📄 PRD'], ['ia','🗺️ Information Architecture'],
+            ['schema','🗄️ Database Schema'], ['api','🔌 API Endpoints'], ['ux','🎨 UX/UI Pages'],
+            ['flow','🔄 Workflow'], ['ai','🤖 AI Matching Logic'], ['prompt','💬 AI Prompts'],
+            ['repo','📁 GitHub Structure'], ['readme','📘 README'], ['stack','⚙️ Tech Stack'],
+            ['security','🔐 Security'], ['roadmap','🗓️ Roadmap'], ['todo','✅ Developer TODO'],
+          ].map(([id,l]) => `<a href="#docs/${id}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer" onclick="event.preventDefault();showDocSection('${id}')">${l}</a>`).join('')}
+          <div class="border-t border-slate-100 mt-3 pt-3">
+            <button class="nav-link w-full text-left" onclick="${session ? `navigate(session.role==='hr'?'/hr/dashboard':session.role==='executive'?'/exec/dashboard':'/admin/users')` : `navigate('/login')`}">← กลับสู่ระบบ</button>
+          </div>
+        </nav>
+      </aside>
+      <main class="flex-1 overflow-auto p-10 doc-content scroll-thin">
+        <div id="docContent"></div>
+      </main>
+    </div>`;
+  root.innerHTML = content;
+  showDocSection('overview');
+}
+function showDocSection(id) {
+  $('#docContent').innerHTML = DOC_SECTIONS[id] || '<p>ไม่พบหน้า</p>';
+  $('#docContent').scrollTop = 0;
+}
+
+const DOC_SECTIONS = {
+  overview: `
+    <h2>Thairung Group Recruitment System — ระบบคัดกรองผู้สมัครงานด้วย AI</h2>
+    <p><strong>วัตถุประสงค์:</strong> ช่วย HR และผู้บริหารคัดกรองผู้สมัครงานในองค์กรอย่างเป็นระบบ ลดเวลาในการอ่าน Resume และ JD ทีละฉบับ ใช้ AI ช่วยให้คะแนนความเหมาะสม สรุปจุดแข็ง/จุดอ่อน และส่งต่อขั้นตอนการพิจารณาได้ครบในระบบเดียว</p>
+    <h3>ขอบเขตของระบบ (Scope)</h3>
+    <ul>
+      <li>ระบบ Login + Role-based Access (HR / Executive / Admin)</li>
+      <li>เพิ่ม/แก้ไข/ลบ ผู้สมัคร พร้อมแนบไฟล์ Resume, JD, ไฟล์เสียง, ไฟล์เปรียบเทียบ</li>
+      <li>AI Matching เปรียบเทียบ Resume กับ JD ออกผลลัพธ์เป็น % พร้อมจุดแข็ง/จุดอ่อน</li>
+      <li>Workflow ส่งให้ผู้บริหารประเมิน + ผลกลับ HR</li>
+      <li>Dashboard สรุปครบ + Filter + Export CSV</li>
+      <li>Activity Log ตาม audit ครบทุก action</li>
+    </ul>
+    <h3>หน้านี้ใช้งานอย่างไร</h3>
+    <p>เมนูซ้ายมีเอกสารแต่ละส่วน คลิกเพื่อดูรายละเอียด — เอกสารฉบับนี้มีไว้สำหรับ Developer และ Stakeholder เพื่อใช้สร้างระบบจริงในเวอร์ชัน Production</p>
+  `,
+  prd: `
+    <h2>Product Requirement Document (PRD)</h2>
+    <h3>1. ภาพรวมระบบ</h3>
+    <p>Thairung Group Recruitment System เป็น Web Application สำหรับองค์กรขนาดกลาง-ใหญ่ที่ต้องการลด overhead ในการคัดกรองผู้สมัคร โดยใช้ AI วิเคราะห์ความเหมาะสมระหว่าง Resume และ Job Description อัตโนมัติ และให้ workflow การส่งต่อให้ผู้บริหารพิจารณา</p>
+    <h3>2. User Roles</h3>
+    <table>
+      <tr><th>Role</th><th>หน้าที่</th><th>สิทธิ์หลัก</th></tr>
+      <tr><td>HR</td><td>เพิ่มผู้สมัคร / ดูฐานข้อมูล / ส่งให้ผู้บริหาร</td><td>CRUD ผู้สมัครทั้งหมด, ดู AI result, อัปเดตสถานะ</td></tr>
+      <tr><td>Executive</td><td>ประเมินผู้สมัครที่ HR ส่งมา</td><td>อ่าน-only ข้อมูลจาก HR / เขียนผลประเมินของตัวเอง</td></tr>
+      <tr><td>Admin</td><td>จัดการผู้ใช้และระบบ</td><td>CRUD users, positions, JD templates, audit log</td></tr>
+    </table>
+    <h3>3. User Journey ของ HR</h3>
+    <ol>
+      <li>Login เข้าระบบ</li>
+      <li>เปิดหน้า Dashboard ดูภาพรวม</li>
+      <li>คลิก "เพิ่มผู้สมัคร" → กรอกข้อมูลผู้สมัคร + อัปโหลด Resume + เลือกตำแหน่ง + วาง JD</li>
+      <li>ระบบรัน AI Matching ให้คะแนน + จุดแข็ง/จุดอ่อน → แสดงผลในหน้า Detail</li>
+      <li>HR เพิ่มความเห็นของตน → คลิก "ส่งให้ผู้บริหาร" → เลือกผู้บริหาร</li>
+      <li>ติดตามสถานะใน Final Summary จนผู้บริหารประเมิน</li>
+    </ol>
+    <h3>4. User Journey ของผู้บริหาร</h3>
+    <ol>
+      <li>Login → เห็นรายการที่ HR ส่งมา</li>
+      <li>คลิกผู้สมัคร → อ่าน Resume / JD / ผล AI / ความเห็น HR / ฟังไฟล์เสียง</li>
+      <li>เลือกผลการพิจารณา (3 ตัวเลือก: นัดสัมภาษณ์ / ไม่ผ่าน / เหมาะกับตำแหน่งอื่น)</li>
+      <li>เพิ่มความเห็น → กดยืนยัน → สถานะกลับไปที่ HR Dashboard</li>
+    </ol>
+    <h3>5. Core Features</h3>
+    <ul>
+      <li>Multi-role Authentication (Email + Password, JWT/Session)</li>
+      <li>Candidate Management (CRUD + file attachments)</li>
+      <li>AI Resume-JD Matching (% + summary + pros/cons)</li>
+      <li>Executive Assignment Workflow</li>
+      <li>Dashboard with Search/Filter/Sort/Export</li>
+      <li>Activity Log + Audit Trail</li>
+      <li>Notification (in-app, email future)</li>
+    </ul>
+    <h3>6. Edge Cases</h3>
+    <ul>
+      <li>ผู้สมัครซ้ำ (เบอร์/อีเมลเดียวกัน) → ระบบ alert + ให้เลือกใช้ data เดิมหรือสร้างใหม่</li>
+      <li>JD ว่างหรือ Resume ว่าง → ระบบไม่รัน AI + แสดงข้อความเตือน</li>
+      <li>HR ลบผู้สมัครที่ส่งให้ผู้บริหารแล้ว → ต้อง soft delete + ผู้บริหารยังเห็นได้แต่ marked as deleted</li>
+      <li>ผู้บริหาร 2 คนได้รับมอบหมายผู้สมัครคนเดียวกัน (concurrent review) → ระบบบันทึกผลแยกกันได้</li>
+      <li>ไฟล์ใหญ่เกิน limit (เช่น เสียงสัมภาษณ์ 1 ชม.) → ใช้ chunked upload + virus scan</li>
+      <li>ผู้บริหารไม่ active เกิน 7 วัน → ระบบส่ง reminder email</li>
+      <li>HR แก้ไขข้อมูลหลังส่งไปแล้ว → log version + ผู้บริหารเห็นว่ามีการ update</li>
+    </ul>
+    <h3>7. Security Requirements</h3>
+    <ul>
+      <li>HTTPS + HSTS เท่านั้น</li>
+      <li>Password ใช้ bcrypt/argon2 + salt</li>
+      <li>JWT มี short expiry (15 นาที) + refresh token</li>
+      <li>Role-based + Row-level access control บน database</li>
+      <li>Signed URL สำหรับไฟล์ — ไม่ public bucket</li>
+      <li>Rate limiting + Brute force protection</li>
+      <li>Audit log ทุก mutation (create/update/delete/send/review)</li>
+      <li>PII Encryption at rest (อย่างน้อย email/phone)</li>
+      <li>GDPR/PDPA compliance — มีฟังก์ชัน "Right to delete"</li>
+    </ul>
+  `,
+  ia: `
+    <h2>Information Architecture</h2>
+    <h3>Sitemap</h3>
+    <pre><code>/                    → Login Page
+/login               → Login (multi-role)
+
+[HR Pages]
+/hr/dashboard        → HR Dashboard (overview)
+/hr/add              → Add Candidate
+/hr/candidate/:id    → Candidate Detail
+/hr/summary          → Final Summary (full table + filters)
+/hr/activity         → Activity Log
+
+[Executive Pages]
+/exec/dashboard      → My assigned candidates
+/exec/review/:id     → Review candidate
+
+[Admin Pages]
+/admin/users         → User management
+/admin/positions     → Position & JD templates
+/admin/activity      → Global Activity Log
+/admin/settings      → System settings
+
+/docs                → Documentation (PRD, Schema, etc.)</code></pre>
+
+    <h3>Navigation Menu — HR</h3>
+    <ul>
+      <li>🏠 แดชบอร์ด (Dashboard)</li>
+      <li>➕ เพิ่มผู้สมัคร (Add Candidate)</li>
+      <li>📊 สรุปทั้งหมด (Final Summary)</li>
+      <li>🔔 Activity Log</li>
+      <li>📘 เอกสารระบบ (Docs)</li>
+    </ul>
+
+    <h3>Navigation Menu — ผู้บริหาร</h3>
+    <ul>
+      <li>📋 รายการรอประเมิน (Pending Review)</li>
+      <li>✅ ที่ประเมินไปแล้ว (Reviewed History)</li>
+      <li>📘 เอกสารระบบ (Docs)</li>
+    </ul>
+
+    <h3>Navigation Menu — Admin</h3>
+    <ul>
+      <li>👥 จัดการผู้ใช้</li>
+      <li>💼 ตำแหน่งงาน</li>
+      <li>🔔 Activity Log</li>
+      <li>⚙️ Settings</li>
+    </ul>
+  `,
+  schema: `
+    <h2>Database Schema (PostgreSQL)</h2>
+    <p>ออกแบบเพื่อรองรับ Supabase / Postgres ทั่วไป มี foreign key เพื่อความ integrity และ row-level security policies</p>
+
+    <h3>Table: users</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td>รหัสผู้ใช้</td></tr>
+      <tr><td>email</td><td>VARCHAR(255) UNIQUE</td><td>อีเมล (login)</td></tr>
+      <tr><td>password_hash</td><td>TEXT</td><td>รหัสผ่าน (bcrypt/argon2)</td></tr>
+      <tr><td>name</td><td>VARCHAR(120)</td><td>ชื่อแสดง</td></tr>
+      <tr><td>role_id</td><td>UUID FK → roles.id</td><td>บทบาท</td></tr>
+      <tr><td>is_active</td><td>BOOLEAN</td><td>เปิด/ปิดบัญชี</td></tr>
+      <tr><td>last_login_at</td><td>TIMESTAMPTZ</td><td>เข้าสู่ระบบล่าสุด</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>สร้างเมื่อ</td></tr>
+      <tr><td>updated_at</td><td>TIMESTAMPTZ</td><td>แก้ไขล่าสุด</td></tr>
+    </table>
+
+    <h3>Table: roles</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>code</td><td>VARCHAR(20) UNIQUE</td><td>hr | executive | admin</td></tr>
+      <tr><td>label</td><td>VARCHAR(50)</td><td>ชื่อแสดง</td></tr>
+      <tr><td>permissions</td><td>JSONB</td><td>permission map</td></tr>
+    </table>
+
+    <h3>Table: job_positions</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>title</td><td>VARCHAR(150)</td><td>ชื่อตำแหน่ง</td></tr>
+      <tr><td>department</td><td>VARCHAR(100)</td><td>แผนก</td></tr>
+      <tr><td>level</td><td>VARCHAR(40)</td><td>Junior/Senior/Lead</td></tr>
+      <tr><td>is_open</td><td>BOOLEAN</td><td>เปิดรับอยู่หรือไม่</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>Table: job_descriptions</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>position_id</td><td>UUID FK → job_positions.id</td><td>ตำแหน่งที่อ้างอิง</td></tr>
+      <tr><td>version</td><td>INT</td><td>เก็บ version JD</td></tr>
+      <tr><td>raw_text</td><td>TEXT</td><td>เนื้อหา JD ทั้งหมด</td></tr>
+      <tr><td>file_id</td><td>UUID FK → files.id NULL</td><td>ไฟล์ JD แนบ (ถ้ามี)</td></tr>
+      <tr><td>extracted_skills</td><td>JSONB</td><td>ทักษะที่สกัดได้</td></tr>
+      <tr><td>required_years</td><td>INT NULL</td><td>ปีประสบการณ์ขั้นต่ำ</td></tr>
+      <tr><td>created_by</td><td>UUID FK → users.id</td><td></td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>Table: candidates</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>full_name</td><td>VARCHAR(150)</td><td>ชื่อ-นามสกุล</td></tr>
+      <tr><td>email</td><td>VARCHAR(255)</td><td>อีเมล (encrypted)</td></tr>
+      <tr><td>phone</td><td>VARCHAR(30)</td><td>เบอร์ (encrypted)</td></tr>
+      <tr><td>position_id</td><td>UUID FK → job_positions.id</td><td>ตำแหน่งที่สมัคร</td></tr>
+      <tr><td>jd_id</td><td>UUID FK → job_descriptions.id</td><td>JD ที่ใช้เปรียบเทียบ</td></tr>
+      <tr><td>resume_text</td><td>TEXT</td><td>ข้อความ Resume (extract แล้ว)</td></tr>
+      <tr><td>resume_file_id</td><td>UUID FK → files.id</td><td>ไฟล์ Resume ต้นฉบับ</td></tr>
+      <tr><td>hr_note</td><td>TEXT</td><td>ความเห็น HR เบื้องต้น</td></tr>
+      <tr><td>status</td><td>VARCHAR(30)</td><td>new/evaluated/sent_to_exec/interview/rejected/other_position</td></tr>
+      <tr><td>added_by</td><td>UUID FK → users.id</td><td>HR ที่เพิ่ม</td></tr>
+      <tr><td>added_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+      <tr><td>updated_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+      <tr><td>deleted_at</td><td>TIMESTAMPTZ NULL</td><td>soft delete</td></tr>
+    </table>
+
+    <h3>Table: files</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>candidate_id</td><td>UUID FK → candidates.id NULL</td><td>ผูกกับผู้สมัคร</td></tr>
+      <tr><td>file_type</td><td>VARCHAR(20)</td><td>resume / jd / audio / compare</td></tr>
+      <tr><td>storage_key</td><td>TEXT</td><td>path ใน object storage</td></tr>
+      <tr><td>original_name</td><td>TEXT</td><td>ชื่อไฟล์ดั้งเดิม</td></tr>
+      <tr><td>mime_type</td><td>VARCHAR(80)</td><td></td></tr>
+      <tr><td>size_bytes</td><td>BIGINT</td><td></td></tr>
+      <tr><td>checksum</td><td>VARCHAR(64)</td><td>SHA-256</td></tr>
+      <tr><td>uploaded_by</td><td>UUID FK → users.id</td><td></td></tr>
+      <tr><td>uploaded_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>Table: ai_match_results</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>candidate_id</td><td>UUID FK → candidates.id</td><td></td></tr>
+      <tr><td>jd_id</td><td>UUID FK → job_descriptions.id</td><td></td></tr>
+      <tr><td>overall_score</td><td>NUMERIC(5,2)</td><td>%</td></tr>
+      <tr><td>skill_score</td><td>NUMERIC(5,2)</td><td></td></tr>
+      <tr><td>experience_score</td><td>NUMERIC(5,2)</td><td></td></tr>
+      <tr><td>education_score</td><td>NUMERIC(5,2)</td><td></td></tr>
+      <tr><td>matched_skills</td><td>JSONB</td><td>ทักษะที่ตรง</td></tr>
+      <tr><td>missing_skills</td><td>JSONB</td><td>ทักษะที่ขาด</td></tr>
+      <tr><td>summary</td><td>TEXT</td><td>สรุปจาก LLM</td></tr>
+      <tr><td>pros</td><td>JSONB</td><td>ข้อดี (array)</td></tr>
+      <tr><td>cons</td><td>JSONB</td><td>ข้อเสีย (array)</td></tr>
+      <tr><td>recommendation</td><td>VARCHAR(50)</td><td>นัดสัมภาษณ์ ฯลฯ</td></tr>
+      <tr><td>model_name</td><td>VARCHAR(60)</td><td>เช่น claude-sonnet-4</td></tr>
+      <tr><td>raw_response</td><td>JSONB</td><td>response ดิบ</td></tr>
+      <tr><td>computed_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>Table: hr_reviews</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>candidate_id</td><td>UUID FK → candidates.id</td><td></td></tr>
+      <tr><td>hr_id</td><td>UUID FK → users.id</td><td></td></tr>
+      <tr><td>comment</td><td>TEXT</td><td>ความเห็น HR (ฉบับล่าสุด)</td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+      <tr><td>updated_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>Table: review_assignments</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>candidate_id</td><td>UUID FK → candidates.id</td><td></td></tr>
+      <tr><td>hr_id</td><td>UUID FK → users.id</td><td>HR ที่ส่ง</td></tr>
+      <tr><td>executive_id</td><td>UUID FK → users.id</td><td>ผู้บริหารที่ได้รับ</td></tr>
+      <tr><td>message</td><td>TEXT</td><td>ข้อความถึงผู้บริหาร</td></tr>
+      <tr><td>assigned_at</td><td>TIMESTAMPTZ</td><td>วันส่ง</td></tr>
+      <tr><td>status</td><td>VARCHAR(20)</td><td>pending / done</td></tr>
+    </table>
+
+    <h3>Table: executive_reviews</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>assignment_id</td><td>UUID FK → review_assignments.id</td><td></td></tr>
+      <tr><td>candidate_id</td><td>UUID FK → candidates.id</td><td></td></tr>
+      <tr><td>reviewer_id</td><td>UUID FK → users.id</td><td>ผู้บริหาร</td></tr>
+      <tr><td>decision</td><td>VARCHAR(30)</td><td>interview / rejected / other_position</td></tr>
+      <tr><td>comment</td><td>TEXT</td><td>ความเห็นผู้บริหาร</td></tr>
+      <tr><td>evaluated_at</td><td>TIMESTAMPTZ</td><td>วันประเมิน</td></tr>
+    </table>
+
+    <h3>Table: activity_logs</h3>
+    <table>
+      <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+      <tr><td>id</td><td>UUID PK</td><td></td></tr>
+      <tr><td>actor_id</td><td>UUID FK → users.id</td><td>ใครเป็นคนทำ</td></tr>
+      <tr><td>actor_role</td><td>VARCHAR(20)</td><td></td></tr>
+      <tr><td>action</td><td>VARCHAR(60)</td><td>create_candidate, send_to_exec, exec_review ฯลฯ</td></tr>
+      <tr><td>entity_type</td><td>VARCHAR(40)</td><td>candidate / file / user ฯลฯ</td></tr>
+      <tr><td>entity_id</td><td>UUID</td><td></td></tr>
+      <tr><td>meta</td><td>JSONB</td><td>ข้อมูลเพิ่ม (before/after)</td></tr>
+      <tr><td>ip_address</td><td>INET</td><td></td></tr>
+      <tr><td>user_agent</td><td>TEXT</td><td></td></tr>
+      <tr><td>created_at</td><td>TIMESTAMPTZ</td><td></td></tr>
+    </table>
+
+    <h3>ER Relationship Summary</h3>
+    <pre><code>roles 1—* users
+users 1—* candidates (added_by)
+job_positions 1—* job_descriptions
+candidates *—1 job_positions
+candidates *—1 job_descriptions
+candidates 1—* files (resume, jd, audio, compare)
+candidates 1—1 ai_match_results (latest)
+candidates 1—* hr_reviews
+candidates 1—* review_assignments
+review_assignments 1—1 executive_reviews
+users 1—* activity_logs (actor)</code></pre>
+  `,
+  api: `
+    <h2>API Endpoint List (REST)</h2>
+    <p>ใช้ pattern <code>/api/v1/...</code> ทั้งหมด — รองรับ JWT Authentication ใน Authorization header</p>
+
+    <h3>Authentication</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Body / Query</th><th>Description</th></tr>
+      <tr><td>POST</td><td>/auth/login</td><td>{email, password}</td><td>เข้าสู่ระบบ</td></tr>
+      <tr><td>POST</td><td>/auth/logout</td><td>—</td><td>ออกจากระบบ</td></tr>
+      <tr><td>POST</td><td>/auth/refresh</td><td>{refreshToken}</td><td>รีเฟรช token</td></tr>
+      <tr><td>GET</td><td>/auth/me</td><td>—</td><td>ข้อมูลผู้ใช้ปัจจุบัน</td></tr>
+    </table>
+
+    <h3>Candidates</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET</td><td>/candidates?status=&position=&q=&from=&to=&sort=</td><td>List + filter (HR/Admin)</td></tr>
+      <tr><td>GET</td><td>/candidates/:id</td><td>รายละเอียดผู้สมัคร</td></tr>
+      <tr><td>POST</td><td>/candidates</td><td>สร้างผู้สมัคร (multipart files + json)</td></tr>
+      <tr><td>PATCH</td><td>/candidates/:id</td><td>แก้ไขข้อมูล</td></tr>
+      <tr><td>DELETE</td><td>/candidates/:id</td><td>Soft delete</td></tr>
+      <tr><td>POST</td><td>/candidates/:id/files</td><td>อัปโหลดไฟล์เพิ่ม</td></tr>
+      <tr><td>DELETE</td><td>/candidates/:id/files/:fileId</td><td>ลบไฟล์</td></tr>
+      <tr><td>POST</td><td>/candidates/:id/ai-match</td><td>รัน/รัน AI ใหม่</td></tr>
+      <tr><td>POST</td><td>/candidates/:id/hr-note</td><td>บันทึก HR note</td></tr>
+      <tr><td>POST</td><td>/candidates/:id/send-to-executive</td><td>{executiveId, message}</td></tr>
+      <tr><td>POST</td><td>/candidates/:id/status</td><td>เปลี่ยนสถานะด้วยตนเอง</td></tr>
+    </table>
+
+    <h3>Executive</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET</td><td>/exec/assignments</td><td>รายการที่ได้รับมอบหมาย</td></tr>
+      <tr><td>GET</td><td>/exec/assignments/:id</td><td>รายละเอียด</td></tr>
+      <tr><td>POST</td><td>/exec/assignments/:id/review</td><td>{decision, comment}</td></tr>
+    </table>
+
+    <h3>Positions / JD</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET</td><td>/positions</td><td>รายการตำแหน่ง</td></tr>
+      <tr><td>POST</td><td>/positions</td><td>เพิ่มตำแหน่ง (Admin)</td></tr>
+      <tr><td>PATCH</td><td>/positions/:id</td><td>แก้ไข</td></tr>
+      <tr><td>POST</td><td>/job-descriptions</td><td>สร้าง JD ใหม่</td></tr>
+      <tr><td>GET</td><td>/job-descriptions/:id</td><td></td></tr>
+    </table>
+
+    <h3>Admin / Users</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET</td><td>/admin/users</td><td>รายชื่อผู้ใช้</td></tr>
+      <tr><td>POST</td><td>/admin/users</td><td>เพิ่มผู้ใช้</td></tr>
+      <tr><td>PATCH</td><td>/admin/users/:id</td><td>แก้ไข role/active</td></tr>
+      <tr><td>DELETE</td><td>/admin/users/:id</td><td>ลบ</td></tr>
+      <tr><td>GET</td><td>/admin/activity-logs?from=&to=&user=</td><td>ดู audit log</td></tr>
+    </table>
+
+    <h3>Files</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+      <tr><td>GET</td><td>/files/:id/signed-url</td><td>คืน URL ชั่วคราว (15 นาที)</td></tr>
+    </table>
+  `,
+  ux: `
+    <h2>UX/UI Page Layouts</h2>
+
+    <h3>1. Login Page</h3>
+    <p><strong>Layout:</strong> 2-column — ซ้าย gradient brand + tagline + 3 features bullet, ขวา form</p>
+    <ul>
+      <li>Form fields: email, password, submit</li>
+      <li>Quick-login buttons สำหรับ demo (HR / Exec / Admin)</li>
+      <li>ลิงก์ "เอกสารระบบ"</li>
+    </ul>
+
+    <h3>2. HR Dashboard</h3>
+    <p><strong>Layout:</strong> Sidebar + Main content</p>
+    <ul>
+      <li>Header: ชื่อ HR + ปุ่ม "+ เพิ่มผู้สมัครใหม่"</li>
+      <li>4 Stat Cards: ทั้งหมด / รอดำเนินการ / ส่งให้ผู้บริหาร / ผ่านสัมภาษณ์</li>
+      <li>Section "ผู้สมัครล่าสุด": ตารางคอลัมน์ ชื่อ / ตำแหน่ง / วันที่ / % / สถานะ</li>
+    </ul>
+
+    <h3>3. Add Candidate Page</h3>
+    <ul>
+      <li>4 Card สำคัญ: ข้อมูลผู้สมัคร / Resume / JD / ความเห็น HR / แนบไฟล์</li>
+      <li>Form fields: ชื่อ, อีเมล, เบอร์, ตำแหน่ง, resume text, JD text, hr note</li>
+      <li>File drop zones 4 ประเภท: Resume / JD / Audio / Compare</li>
+      <li>ปุ่ม "ใช้ JD เริ่มต้นจากตำแหน่ง"</li>
+      <li>ปุ่ม Submit "บันทึกและประเมิน AI"</li>
+    </ul>
+
+    <h3>4. Candidate Detail Page</h3>
+    <ul>
+      <li>Header: avatar + ชื่อ + ตำแหน่ง + status pill + ปุ่ม "ส่งให้ผู้บริหาร"</li>
+      <li>Left column (2/3): AI Result Card / JD Card / Resume Card / HR Note Card / Executive Review Card (ถ้ามี)</li>
+      <li>Right column (1/3): Files List / Assignment Info / Quick Actions</li>
+    </ul>
+
+    <h3>5. AI Matching Result Card</h3>
+    <ul>
+      <li>วงกลม % ใหญ่ (SVG) + ป้ายระดับ (สูงมาก/ดี/ปานกลาง/ต่ำ)</li>
+      <li>3 mini progress bar: Skills / Experience / Education</li>
+      <li>Summary text จาก AI</li>
+      <li>2-column: จุดแข็ง (เขียว) / จุดที่ขาด (แดง)</li>
+      <li>ป้ายทักษะ matched / missing</li>
+      <li>คำแนะนำท้ายการ์ด</li>
+    </ul>
+
+    <h3>6. Send to Executive Modal</h3>
+    <ul>
+      <li>สรุปผู้สมัคร + AI score</li>
+      <li>Dropdown เลือกผู้บริหาร</li>
+      <li>Textarea ข้อความถึงผู้บริหาร</li>
+      <li>ปุ่มยืนยัน</li>
+    </ul>
+
+    <h3>7. Executive Dashboard</h3>
+    <ul>
+      <li>3 Stat Cards: รอประเมิน / ประเมินแล้ว / ทั้งหมด</li>
+      <li>Section "รอประเมิน": grid card 2 คอลัมน์ แต่ละการ์ดแสดงชื่อ-ตำแหน่ง-AI score-ผู้ส่ง-วันส่ง</li>
+      <li>Section "ประเมินแล้ว": grid เดียวกัน + ป้ายผลการประเมิน</li>
+    </ul>
+
+    <h3>8. Executive Review Page</h3>
+    <ul>
+      <li>Left column: AI / JD / Resume / HR Note (read-only)</li>
+      <li>Right column sticky: 3-option radio (นัดสัมภาษณ์ / ไม่ผ่าน / เหมาะตำแหน่งอื่น) + textarea + ปุ่มยืนยัน + Files</li>
+    </ul>
+
+    <h3>9. HR Final Summary Page</h3>
+    <ul>
+      <li>Header: title + ปุ่ม Export CSV</li>
+      <li>Filter bar: search, position, status, executive, sort, date range from/to</li>
+      <li>ตารางหลัก 10 คอลัมน์: ชื่อ / ตำแหน่ง / % / HR Note / วันส่ง / ผู้บริหาร / ผลประเมิน / วันประเมิน / สถานะ / ไฟล์</li>
+      <li>คลิกแถวเพื่อดู detail</li>
+    </ul>
+  `,
+  flow: `
+    <h2>Workflow Diagram (อธิบายเป็นข้อความ)</h2>
+    <pre><code>┌─────────────┐
+│  HR Login   │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────────┐
+│  HR Dashboard       │
+│  (ดูภาพรวม)         │
+└──────┬──────────────┘
+       │ คลิก "+ เพิ่มผู้สมัคร"
+       ▼
+┌─────────────────────────────────┐
+│  Add Candidate Page             │
+│  - กรอกข้อมูล                    │
+│  - Upload Resume / JD / Audio   │
+│  - กดบันทึก                       │
+└──────┬──────────────────────────┘
+       │ ระบบรัน AI Matching
+       ▼
+┌─────────────────────────────────┐
+│  AI Engine (Claude/OpenAI)      │
+│  - Extract Skills               │
+│  - Compare with JD              │
+│  - คำนวณ %                       │
+│  - Generate summary/pros/cons    │
+└──────┬──────────────────────────┘
+       │ บันทึกผลใน ai_match_results
+       ▼
+┌─────────────────────────────────┐
+│  Candidate Detail Page          │
+│  - แสดง AI Result               │
+│  - HR เพิ่มความเห็น              │
+│  - คลิก "ส่งให้ผู้บริหาร"          │
+└──────┬──────────────────────────┘
+       │ บันทึก review_assignment
+       │ status = sent_to_exec
+       ▼
+┌─────────────────────────────────┐
+│  Executive Login                │
+│  Executive Dashboard            │
+│  (เห็นเฉพาะที่ HR ส่งให้ตน)        │
+└──────┬──────────────────────────┘
+       │ คลิกผู้สมัคร
+       ▼
+┌─────────────────────────────────┐
+│  Executive Review Page          │
+│  - อ่าน AI / Resume / JD / Note │
+│  - เลือก: นัดสัมภาษณ์/ไม่ผ่าน/อื่น   │
+│  - เพิ่มความเห็น → ยืนยัน          │
+└──────┬──────────────────────────┘
+       │ บันทึก executive_reviews
+       │ อัปเดต candidate.status
+       ▼
+┌─────────────────────────────────┐
+│  HR Dashboard / Final Summary   │
+│  - HR เห็นสถานะล่าสุด             │
+│  - เห็นความเห็นผู้บริหาร            │
+│  - Export CSV / รายงาน           │
+└─────────────────────────────────┘</code></pre>
+    <p>ทุก step ระบบบันทึก <code>activity_logs</code> ตามผู้ทำ + เวลา</p>
+  `,
+  ai: `
+    <h2>AI Matching Logic</h2>
+    <h3>Pipeline</h3>
+    <ol>
+      <li><strong>Input:</strong> Resume text + JD text + (optional) Resume PDF/DOCX</li>
+      <li><strong>Pre-processing:</strong>
+        <ul>
+          <li>ถ้าเป็นไฟล์ → ใช้ pdf-parse / mammoth สำหรับ DOCX → ได้ raw text</li>
+          <li>Normalize whitespace, lowercase สำหรับ matching</li>
+          <li>Sanitize (remove emojis, special chars สำหรับ skill extraction)</li>
+        </ul>
+      </li>
+      <li><strong>Extraction:</strong>
+        <ul>
+          <li>Skills extraction (rule-based + LLM): match กับ skill dictionary + LLM ช่วยจับเพิ่ม</li>
+          <li>Years of experience: regex จาก phrase "X years" / "X ปี"</li>
+          <li>Education level + field: rule-based + LLM</li>
+          <li>Soft skills, language proficiency, certifications</li>
+        </ul>
+      </li>
+      <li><strong>Comparison Layer:</strong>
+        <ul>
+          <li>Required skills ↔ Candidate skills → Jaccard / coverage ratio</li>
+          <li>Required years vs candidate years → ratio (cap ที่ 100%)</li>
+          <li>Education match → 100/60</li>
+          <li>Keywords semantic similarity → cosine on embeddings</li>
+        </ul>
+      </li>
+      <li><strong>Score Aggregation:</strong>
+        <pre><code>overall = skill_score * 0.55
+        + experience_score * 0.30
+        + education_score * 0.15</code></pre>
+        (น้ำหนักปรับได้ตาม config ระดับองค์กร)
+      </li>
+      <li><strong>LLM Generation:</strong>
+        <ul>
+          <li>เรียก Claude API ส่ง resume + JD พร้อม structured prompt</li>
+          <li>ขอ output เป็น JSON: summary, pros[], cons[], recommendation</li>
+        </ul>
+      </li>
+      <li><strong>Storage:</strong> บันทึกผลใน <code>ai_match_results</code> + เก็บ raw response เผื่อ debug</li>
+    </ol>
+
+    <h3>ทำไมต้องใช้ทั้ง Rule + LLM</h3>
+    <ul>
+      <li>Rule-based ให้ตัวเลข deterministic + ทำซ้ำได้ + ราคาถูก</li>
+      <li>LLM ให้บริบท + summary ภาษาธรรมชาติ + จับ semantic ที่ rule ไม่เห็น</li>
+      <li>Hybrid → คะแนนเชื่อถือได้ + คำอธิบายสวย</li>
+    </ul>
+
+    <h3>การประเมินคุณภาพ</h3>
+    <ul>
+      <li>เก็บ feedback HR/Exec กับผล AI → train calibration</li>
+      <li>Track precision/recall ของ skill extraction</li>
+      <li>A/B test prompt versions ระหว่าง rollout</li>
+    </ul>
+  `,
+  prompt: `
+    <h2>AI Prompt Templates</h2>
+
+    <h3>System Prompt</h3>
+    <pre><code>You are a senior HR assistant who helps screen job candidates.
+You always respond in Thai (except technical terms which stay in English).
+Always output valid JSON conforming to the provided schema.
+Be objective, evidence-based, and avoid bias related to age, gender,
+ethnicity, or non-job-related personal information.</code></pre>
+
+    <h3>User Prompt — Resume vs JD Match</h3>
+    <pre><code>เปรียบเทียบ Resume ของผู้สมัครกับ Job Description ที่ให้ และประเมินความเหมาะสม
+
+=== JOB DESCRIPTION ===
+{{jd_text}}
+
+=== RESUME ===
+{{resume_text}}
+
+=== INSTRUCTIONS ===
+1. สกัดทักษะ (technical + soft) จาก Resume และ JD
+2. ระบุประสบการณ์ (ปี) จากทั้งสองเอกสาร
+3. ระบุการศึกษาและสาขาที่ตรงกัน
+4. คำนวณคะแนน 0-100 แต่ละมิติ:
+   - skill_score
+   - experience_score
+   - education_score
+   - overall_score (น้ำหนัก 0.55/0.30/0.15)
+5. สร้างจุดแข็ง (3-5 ข้อ) เป็นข้อความภาษาไทย
+6. สร้างจุดที่ยังขาด (1-5 ข้อ) เป็นภาษาไทย
+7. แนะนำว่าควร "นัดสัมภาษณ์" หรือ "ไม่นัดสัมภาษณ์" หรือ "เหมาะกับตำแหน่งอื่น"
+
+ตอบกลับเป็น JSON เท่านั้น ตาม schema:
+{
+  "matched_skills": [string],
+  "missing_skills": [string],
+  "candidate_years": number | null,
+  "required_years": number | null,
+  "skill_score": number,
+  "experience_score": number,
+  "education_score": number,
+  "overall_score": number,
+  "summary": string,
+  "pros": [string],
+  "cons": [string],
+  "recommendation": "interview" | "rejected" | "other_position",
+  "reasoning": string
+}</code></pre>
+
+    <h3>Implementation (TypeScript + Anthropic SDK)</h3>
+    <pre><code>import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+export async function matchResumeWithJD(resumeText: string, jdText: string) {
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 2048,
+    system: SYSTEM_PROMPT,
+    messages: [{
+      role: "user",
+      content: USER_PROMPT
+        .replace("{{jd_text}}", jdText)
+        .replace("{{resume_text}}", resumeText),
+    }],
+  });
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+  // strip code fences if any
+  const json = text.replace(/^\`\`\`json|\`\`\`$/gm, "").trim();
+  return JSON.parse(json);
+}</code></pre>
+
+    <h3>Tips สำหรับการใช้งานจริง</h3>
+    <ul>
+      <li>Cache ผลลัพธ์ตาม hash(resume + jd) เพื่อลด API cost</li>
+      <li>Use temperature 0.2-0.3 เพื่อความคงเส้นคงวา</li>
+      <li>Add JSON schema validation ก่อนเก็บ DB</li>
+      <li>เก็บ token usage + cost tracking ทุกครั้ง</li>
+      <li>มี retry + fallback เมื่อ JSON parse fail</li>
+    </ul>
+  `,
+  repo: `
+    <h2>GitHub Repository Structure</h2>
+    <pre><code>hiresense/
+├── frontend/                    # Next.js 14 App Router
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   └── login/page.tsx
+│   │   ├── (hr)/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   ├── add/page.tsx
+│   │   │   ├── candidate/[id]/page.tsx
+│   │   │   ├── summary/page.tsx
+│   │   │   └── activity/page.tsx
+│   │   ├── (exec)/
+│   │   │   ├── dashboard/page.tsx
+│   │   │   └── review/[id]/page.tsx
+│   │   ├── (admin)/
+│   │   │   ├── users/page.tsx
+│   │   │   └── positions/page.tsx
+│   │   ├── api/                 # API Routes (proxy/orchestration)
+│   │   ├── layout.tsx
+│   │   └── globals.css
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui
+│   │   ├── candidate/
+│   │   ├── ai/
+│   │   └── layout/
+│   ├── lib/
+│   │   ├── supabase.ts
+│   │   ├── ai/match.ts
+│   │   ├── auth.ts
+│   │   └── utils.ts
+│   ├── public/
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── backend/                     # (ถ้าแยก) NestJS / Express
+│   ├── src/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── candidates/
+│   │   │   ├── files/
+│   │   │   ├── ai-matching/
+│   │   │   ├── reviews/
+│   │   │   └── admin/
+│   │   ├── common/
+│   │   └── main.ts
+│   └── package.json
+│
+├── database/
+│   ├── migrations/
+│   │   ├── 0001_init.sql
+│   │   ├── 0002_indexes.sql
+│   │   └── 0003_rls_policies.sql
+│   ├── seeds/
+│   │   └── default_roles.sql
+│   └── README.md
+│
+├── docs/
+│   ├── PRD.md
+│   ├── DATABASE.md
+│   ├── API.md
+│   ├── SECURITY.md
+│   ├── DEPLOYMENT.md
+│   └── architecture.png
+│
+├── scripts/
+│   ├── extract-text.ts          # PDF/DOCX → text
+│   ├── seed-demo-data.ts
+│   └── backup-db.sh
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml               # lint + test + typecheck
+│       └── deploy.yml
+│
+├── .env.example
+├── .gitignore
+├── README.md
+├── LICENSE
+└── package.json                 # workspace root</code></pre>
+  `,
+  readme: `
+    <h2>README.md (ตัวอย่างสำหรับ repo)</h2>
+    <pre><code># Thairung Group Recruitment System
+
+> ระบบคัดกรองผู้สมัครงานที่ขับเคลื่อนด้วย AI สำหรับองค์กร
+
+[![CI](https://img.shields.io/github/actions/workflow/status/your-org/hiresense/ci.yml)](#)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## ✨ Features
+
+- 🔐 Multi-role Authentication (HR / Executive / Admin)
+- 📄 Resume + JD upload (PDF, DOCX, TXT, MP3, M4A, WAV, XLSX)
+- 🤖 AI Matching ด้วย Claude — % เหมาะสม + จุดแข็ง/อ่อน
+- 👥 Workflow ส่งผู้บริหารประเมิน
+- 📊 Dashboard + Filter + Export CSV
+- 🔍 Activity Log ครบทุก action
+- 🛡️ Row-level Security + Signed URL
+
+## 🛠 Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui |
+| Backend | Next.js API Routes / Supabase Edge Functions |
+| Database | PostgreSQL (Supabase) |
+| Auth | Supabase Auth (JWT + RLS) |
+| Storage | Supabase Storage (signed URLs) |
+| AI | Anthropic Claude API |
+| Hosting | Vercel (frontend) + Supabase (backend) |
+
+## 🚀 Quick Start
+
+\`\`\`bash
+git clone https://github.com/your-org/hiresense.git
+cd hiresense
+cp .env.example .env.local
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+\`\`\`
+
+เปิด http://localhost:3000
+
+### 🔑 Test Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| HR | hr@company.com | hr123 |
+| Executive | exec@company.com | exec123 |
+| Admin | admin@company.com | admin123 |
+
+## 📂 Project Structure
+
+ดู \`docs/architecture.png\` และ \`docs/DATABASE.md\` สำหรับรายละเอียด
+
+## 🧪 Testing
+
+\`\`\`bash
+npm run lint
+npm run typecheck
+npm run test
+npm run test:e2e
+\`\`\`
+
+## 🚢 Deployment
+
+- Frontend → Vercel (auto deploy on main)
+- Database → Supabase (managed)
+- Migrations → \`supabase db push\`
+- Env vars → ตั้งบน Vercel + Supabase dashboard
+
+## 🔐 Security
+
+- HTTPS only, HSTS enabled
+- Passwords hashed with bcrypt (cost 12)
+- JWT short expiry + refresh
+- RLS policies เพื่อจำกัดข้อมูลตาม role
+- Files served via signed URL 15-min expiry
+- Audit log ทุก mutation
+
+ดูเพิ่ม \`docs/SECURITY.md\`
+
+## 📝 License
+
+MIT © 2026 Thairung Group Recruitment System Team</code></pre>
+  `,
+  stack: `
+    <h2>Tech Stack Recommendation</h2>
+
+    <h3>Frontend</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Next.js 14 (แนะนำ)</strong></td><td>SSR/SSG, App Router, Vercel zero-config, ecosystem ใหญ่, TypeScript first-class</td><td>เรียนรู้ App Router มี learning curve</td></tr>
+      <tr><td>Vite + React</td><td>เร็ว, dev experience ดีมาก</td><td>ต้อง config SSR เอง</td></tr>
+      <tr><td>Remix</td><td>Web standards-first, nested routing</td><td>ecosystem เล็กกว่า Next</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Next.js 14 + Tailwind + shadcn/ui</p>
+
+    <h3>Backend</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Next.js API Routes (แนะนำสำหรับ MVP)</strong></td><td>ไม่ต้องดูแล server แยก, deploy เดียวกับ FE</td><td>limited execution time บน Vercel</td></tr>
+      <tr><td>NestJS</td><td>Enterprise-grade, modular, decorator-based</td><td>โครงสร้างหนัก, ต้อง host แยก</td></tr>
+      <tr><td>Supabase Edge Functions (Deno)</td><td>Serverless, ใกล้ DB</td><td>Cold start, ecosystem จำกัด</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Next.js API Routes สำหรับ MVP → ย้ายไป NestJS เมื่อ logic ซับซ้อนขึ้น</p>
+
+    <h3>Database</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Supabase (Postgres) (แนะนำ)</strong></td><td>Auth + DB + Storage + Realtime ครบในที่เดียว, RLS ดีมาก, free tier พอเริ่มต้น</td><td>vendor lock-in (แต่ open-source ย้ายได้)</td></tr>
+      <tr><td>PostgreSQL self-hosted</td><td>ควบคุมเต็ม, ไม่มี vendor lock-in</td><td>ต้องดูแล backup, scaling เอง</td></tr>
+      <tr><td>MySQL/MariaDB</td><td>คุ้นเคย, แพร่หลาย</td><td>JSON support ด้อยกว่า Postgres</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Supabase Postgres</p>
+
+    <h3>Authentication</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Supabase Auth (แนะนำ)</strong></td><td>Built-in, RLS-ready, magic link/SSO/MFA</td><td>คู่กับ Supabase</td></tr>
+      <tr><td>NextAuth.js (Auth.js)</td><td>Provider เยอะ, flexible</td><td>ต้องเขียน RBAC เอง</td></tr>
+      <tr><td>Auth0 / Clerk</td><td>Enterprise features</td><td>ราคาสูงเมื่อ scale</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Supabase Auth + JWT + RLS</p>
+
+    <h3>File Storage</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Supabase Storage (แนะนำสำหรับ MVP)</strong></td><td>Signed URL, RLS, easy</td><td>50GB free จำกัด</td></tr>
+      <tr><td>AWS S3</td><td>Production-grade, ถูก, scale เก่ง</td><td>setup ซับซ้อนกว่า</td></tr>
+      <tr><td>Cloudflare R2</td><td>ไม่มี egress fee</td><td>SDK น้อยกว่า S3</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Supabase Storage → ย้ายไป S3 เมื่อ scale ใหญ่</p>
+
+    <h3>AI Processing</h3>
+    <table>
+      <tr><th>ตัวเลือก</th><th>ข้อดี</th><th>ข้อเสีย</th></tr>
+      <tr><td><strong>Anthropic Claude (แนะนำ)</strong></td><td>เก่งกับเอกสารยาว, output JSON เสถียร, ภาษาไทยดี</td><td>ราคาต่อ token สูงกว่า GPT-4o-mini</td></tr>
+      <tr><td>OpenAI GPT-4o</td><td>ecosystem ใหญ่, function calling</td><td>output JSON บางครั้งไม่ valid</td></tr>
+      <tr><td>Local LLM (Llama 3)</td><td>ไม่มีค่า API, ข้อมูลไม่ออกไป</td><td>ต้อง host GPU, คุณภาพต่ำกว่า frontier</td></tr>
+    </table>
+    <p><strong>เลือก:</strong> Claude Sonnet 4.6 สำหรับ production + cache aggressively</p>
+
+    <h3>Deployment</h3>
+    <p><strong>แนะนำ:</strong></p>
+    <ul>
+      <li>Frontend → <strong>Vercel</strong> (zero-config, edge network)</li>
+      <li>Database / Auth / Storage → <strong>Supabase</strong></li>
+      <li>Background jobs → <strong>Inngest / Trigger.dev</strong></li>
+      <li>Monitoring → <strong>Sentry + Vercel Analytics</strong></li>
+    </ul>
+  `,
+  security: `
+    <h2>Security & Permission Design</h2>
+
+    <h3>Permission Matrix</h3>
+    <table>
+      <tr><th>Action</th><th>HR</th><th>Executive</th><th>Admin</th></tr>
+      <tr><td>List candidates ทั้งหมด</td><td>✓</td><td>เฉพาะที่ assigned</td><td>✓</td></tr>
+      <tr><td>Create candidate</td><td>✓</td><td>—</td><td>✓</td></tr>
+      <tr><td>Edit candidate ของ HR</td><td>✓</td><td>—</td><td>✓</td></tr>
+      <tr><td>Delete candidate</td><td>เฉพาะที่ตัวเองสร้างและยังไม่ส่ง</td><td>—</td><td>✓ (soft delete)</td></tr>
+      <tr><td>ดู AI result</td><td>✓</td><td>เฉพาะ assigned</td><td>✓</td></tr>
+      <tr><td>Send to executive</td><td>✓</td><td>—</td><td>✓</td></tr>
+      <tr><td>Submit executive review</td><td>—</td><td>เฉพาะ assigned</td><td>—</td></tr>
+      <tr><td>Edit executive review</td><td>—</td><td>ของตัวเอง</td><td>—</td></tr>
+      <tr><td>Manage users / roles</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>View activity log ของตัวเอง</td><td>✓</td><td>✓</td><td>✓</td></tr>
+      <tr><td>View activity log ทั้งระบบ</td><td>—</td><td>—</td><td>✓</td></tr>
+      <tr><td>Download files</td><td>เฉพาะของผู้สมัครที่ตัวเองดูแล</td><td>เฉพาะ assigned</td><td>✓</td></tr>
+    </table>
+
+    <h3>Row-Level Security (Supabase RLS) ตัวอย่าง</h3>
+    <pre><code>-- HR เห็นทุก candidate
+CREATE POLICY "hr_select_all" ON candidates FOR SELECT
+  USING (auth.role() = 'hr' OR auth.role() = 'admin');
+
+-- Executive เห็นเฉพาะที่ assigned ให้ตัวเอง
+CREATE POLICY "exec_select_assigned" ON candidates FOR SELECT
+  USING (
+    auth.role() = 'executive'
+    AND EXISTS (
+      SELECT 1 FROM review_assignments ra
+      WHERE ra.candidate_id = candidates.id
+        AND ra.executive_id = auth.uid()
+    )
+  );
+
+-- HR สร้าง candidate ได้
+CREATE POLICY "hr_insert" ON candidates FOR INSERT
+  WITH CHECK (auth.role() IN ('hr', 'admin'));
+
+-- HR แก้ไขได้เฉพาะของตัวเอง (ก่อนส่ง exec)
+CREATE POLICY "hr_update_own" ON candidates FOR UPDATE
+  USING (auth.role() = 'hr' AND added_by = auth.uid() AND status != 'sent_to_exec');</code></pre>
+
+    <h3>File Security</h3>
+    <ul>
+      <li>Storage bucket เป็น <strong>private</strong> ไม่เปิด public</li>
+      <li>เข้าถึงผ่าน signed URL ที่ TTL 15 นาที</li>
+      <li>Backend ตรวจสอบสิทธิ์ก่อน issue signed URL ทุกครั้ง</li>
+      <li>Virus scan ด้วย ClamAV ใน background job ก่อน mark ready</li>
+      <li>Hash ไฟล์ (SHA-256) เก็บไว้เพื่อ integrity check</li>
+    </ul>
+
+    <h3>Other Security Practices</h3>
+    <ul>
+      <li>HTTPS only + HSTS preload</li>
+      <li>Password hash: bcrypt cost 12 (หรือ argon2id)</li>
+      <li>Rate limit /auth/login: 5 ครั้ง / 5 นาที / IP</li>
+      <li>CSRF token สำหรับ form submission</li>
+      <li>CSP header เข้มงวด (no inline script except hash-based)</li>
+      <li>Input validation ทุก endpoint ด้วย Zod schema</li>
+      <li>SQL injection ป้องกันด้วย parameterized query (Prisma/Drizzle)</li>
+      <li>Encrypt PII (email, phone) at rest ด้วย pgcrypto</li>
+      <li>PDPA: มี endpoint /candidates/:id/anonymize เพื่อลบ PII คงเหลือผลสถิติ</li>
+      <li>2FA สำหรับ Admin role (TOTP)</li>
+    </ul>
+
+    <h3>Activity Log Schema</h3>
+    <p>เก็บทุก mutation: <code>action</code> (create_candidate, send_to_exec, exec_review, login, file_download ฯลฯ), <code>actor</code>, <code>entity</code>, <code>before/after JSON</code>, <code>ip + user_agent</code>, <code>timestamp</code></p>
+  `,
+  roadmap: `
+    <h2>Development Roadmap</h2>
+
+    <h3>Phase 1 — MVP (Week 1-3)</h3>
+    <ul>
+      <li>P0: Project setup (Next.js + Supabase + Tailwind)</li>
+      <li>P0: Database schema migrations + seed data</li>
+      <li>P0: Login (HR / Exec / Admin)</li>
+      <li>P0: HR Dashboard (list candidates)</li>
+      <li>P0: Add Candidate (form + file upload)</li>
+      <li>P0: Candidate Detail page</li>
+      <li>P1: HR Note CRUD</li>
+      <li>P1: Soft delete</li>
+    </ul>
+
+    <h3>Phase 2 — AI Matching (Week 4-5)</h3>
+    <ul>
+      <li>P0: PDF/DOCX text extraction</li>
+      <li>P0: Claude integration + JSON parsing</li>
+      <li>P0: AI result UI (vector circle, bars, pros/cons)</li>
+      <li>P1: Re-run AI matching</li>
+      <li>P1: Cache by hash</li>
+      <li>P2: Embedding-based skill similarity</li>
+    </ul>
+
+    <h3>Phase 3 — Executive Review (Week 6-7)</h3>
+    <ul>
+      <li>P0: Send to Executive flow + assignment table</li>
+      <li>P0: Executive Dashboard</li>
+      <li>P0: Executive Review page (3 decisions + comment)</li>
+      <li>P1: Notification (in-app)</li>
+      <li>P2: Email notification ผ่าน Resend</li>
+    </ul>
+
+    <h3>Phase 4 — Dashboard & Export (Week 8)</h3>
+    <ul>
+      <li>P0: HR Final Summary + filters + sort</li>
+      <li>P0: CSV export</li>
+      <li>P1: PDF export ของ candidate report</li>
+      <li>P1: Charts (recharts) — sourcing funnel, time-to-hire</li>
+    </ul>
+
+    <h3>Phase 5 — Security & Production (Week 9-10)</h3>
+    <ul>
+      <li>P0: RLS policies เต็ม</li>
+      <li>P0: Activity log ครบทุก action</li>
+      <li>P0: Signed URL + 15-min expiry</li>
+      <li>P0: Rate limit + CSRF</li>
+      <li>P0: Sentry + Vercel Analytics</li>
+      <li>P0: CI/CD (GitHub Actions)</li>
+      <li>P1: 2FA สำหรับ Admin</li>
+      <li>P1: Database backup automation</li>
+      <li>P2: Penetration test report</li>
+    </ul>
+
+    <h3>Phase 6 — Future Enhancements</h3>
+    <ul>
+      <li>Multi-tenant (รองรับหลายบริษัท)</li>
+      <li>SSO (Google / Microsoft)</li>
+      <li>Calendar integration (Google Calendar / Outlook)</li>
+      <li>ATS integration (Greenhouse, Lever)</li>
+      <li>LinkedIn import</li>
+      <li>Auto-screening rules engine</li>
+      <li>Mobile app (React Native)</li>
+    </ul>
+  `,
+  todo: `
+    <h2>Developer TODO List (เริ่มทำงานได้ทันที)</h2>
+
+    <h3>🛠 Setup</h3>
+    <ul>
+      <li>[ ] สร้าง GitHub repo: <code>your-org/hiresense</code> (private)</li>
+      <li>[ ] สร้าง Supabase project + Vercel project</li>
+      <li>[ ] เพิ่ม env vars: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE, ANTHROPIC_API_KEY</li>
+      <li>[ ] <code>npx create-next-app@latest --ts --tailwind --app</code></li>
+      <li>[ ] ติดตั้ง: shadcn/ui, lucide-react, zod, @supabase/ssr, @anthropic-ai/sdk</li>
+      <li>[ ] ตั้ง ESLint + Prettier + Husky pre-commit</li>
+    </ul>
+
+    <h3>🗄️ Database</h3>
+    <ul>
+      <li>[ ] Migration 0001: tables roles, users, job_positions, job_descriptions</li>
+      <li>[ ] Migration 0002: candidates, files</li>
+      <li>[ ] Migration 0003: ai_match_results, hr_reviews</li>
+      <li>[ ] Migration 0004: review_assignments, executive_reviews</li>
+      <li>[ ] Migration 0005: activity_logs + indexes</li>
+      <li>[ ] Migration 0006: RLS policies ทั้งหมด</li>
+      <li>[ ] Seed: roles + 3 test users + 4 positions + 4 JDs</li>
+    </ul>
+
+    <h3>🔐 Auth</h3>
+    <ul>
+      <li>[ ] Login form + supabase.auth.signInWithPassword</li>
+      <li>[ ] Middleware ตรวจ session + role redirect</li>
+      <li>[ ] Logout + session cleanup</li>
+      <li>[ ] /auth/me API</li>
+    </ul>
+
+    <h3>👥 Candidates</h3>
+    <ul>
+      <li>[ ] POST /api/candidates (multipart) → upload + DB insert</li>
+      <li>[ ] GET /api/candidates with filters</li>
+      <li>[ ] GET /api/candidates/:id</li>
+      <li>[ ] PATCH /api/candidates/:id (HR note, status)</li>
+      <li>[ ] DELETE /api/candidates/:id (soft)</li>
+      <li>[ ] HR Dashboard UI + Add page UI + Detail page UI</li>
+    </ul>
+
+    <h3>🤖 AI Matching</h3>
+    <ul>
+      <li>[ ] lib/ai/extract.ts — pdf-parse + mammoth</li>
+      <li>[ ] lib/ai/match.ts — Claude API call + JSON validation</li>
+      <li>[ ] POST /api/candidates/:id/ai-match</li>
+      <li>[ ] AI Result Card component</li>
+      <li>[ ] Cache by hash(resume + jd)</li>
+    </ul>
+
+    <h3>📤 Send to Executive</h3>
+    <ul>
+      <li>[ ] POST /api/candidates/:id/send-to-executive</li>
+      <li>[ ] สร้าง review_assignments record</li>
+      <li>[ ] Update candidate.status</li>
+      <li>[ ] Modal UI สำหรับเลือก executive</li>
+    </ul>
+
+    <h3>👔 Executive</h3>
+    <ul>
+      <li>[ ] GET /api/exec/assignments</li>
+      <li>[ ] Executive Dashboard UI</li>
+      <li>[ ] POST /api/exec/assignments/:id/review</li>
+      <li>[ ] Executive Review page UI</li>
+    </ul>
+
+    <h3>📊 Final Summary</h3>
+    <ul>
+      <li>[ ] HR Summary page + filter bar</li>
+      <li>[ ] Server-side filtering</li>
+      <li>[ ] CSV export endpoint</li>
+    </ul>
+
+    <h3>🛡️ Security</h3>
+    <ul>
+      <li>[ ] RLS policies test ใน Supabase</li>
+      <li>[ ] Activity log middleware</li>
+      <li>[ ] Signed URL endpoint สำหรับไฟล์</li>
+      <li>[ ] Rate limit /auth/login</li>
+      <li>[ ] Sentry integration</li>
+    </ul>
+
+    <h3>🚀 Deploy</h3>
+    <ul>
+      <li>[ ] GitHub Actions: lint + typecheck + test</li>
+      <li>[ ] Vercel auto-deploy on main</li>
+      <li>[ ] Supabase migrations on PR merge</li>
+      <li>[ ] Env vars บน production</li>
+      <li>[ ] Custom domain + HTTPS + HSTS</li>
+    </ul>
+  `,
+};
+</script>
+</body>
 </html>
