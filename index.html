@@ -385,7 +385,9 @@ function render() {
 
   if (session.role === 'hr') {
     if (hash === '/hr/dashboard') return renderHRDashboard(root);
-    if (hash === '/hr/add') return renderAddCandidate(root);
+    if (hash === '/hr/add') { navigate('/hr/jd'); return; }   // legacy redirect
+    if (hash === '/hr/jd' || hash.startsWith('/hr/jd/')) return renderHRJD(root, hash.split('/')[3] || '');
+    if (hash === '/hr/resume' || hash.startsWith('/hr/resume/')) return renderHRResume(root, hash.split('/')[3] || '');
     if (hash.startsWith('/hr/candidate/')) return renderCandidateDetail(root, hash.split('/').pop());
     if (hash === '/hr/summary') return renderHRSummary(root);
     if (hash === '/hr/compare' || hash.startsWith('/hr/compare/')) return renderHRCompare(root, hash.split('/')[3] || '');
@@ -449,8 +451,9 @@ function shell(content, navItems, title) {
 
 const HR_NAV = [
   { href:'/hr/dashboard', label:'แดชบอร์ด', icon:'🏠' },
-  { href:'/hr/add', label:'เพิ่มผู้สมัคร', icon:'➕' },
-  { href:'/hr/compare', label:'เปรียบเทียบ AI & ส่งผู้บริหาร', icon:'⚖️' },
+  { href:'/hr/jd', label:'1. สร้าง JD', icon:'📋' },
+  { href:'/hr/resume', label:'2. ใส่ Resume', icon:'📄' },
+  { href:'/hr/compare', label:'3. เปรียบเทียบ AI & ส่งผู้บริหาร', icon:'⚖️' },
   { href:'/hr/summary', label:'สรุปทั้งหมด', icon:'📊' },
   { href:'/hr/activity', label:'Activity Log', icon:'🔔' },
 ];
@@ -562,8 +565,9 @@ function renderHRDashboard(root) {
           <p class="text-slate-500 mt-1">สวัสดี ${session.name} — ภาพรวมผู้สมัครงานทั้งหมด</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-          <button class="btn-secondary" onclick="navigate('/hr/compare')">⚖️ เปรียบเทียบ &amp; ส่งให้ผู้บริหาร</button>
-          <button class="btn-primary" onclick="navigate('/hr/add')">+ เพิ่มผู้สมัครใหม่</button>
+          <button class="btn-secondary" onclick="navigate('/hr/compare')">3 ⚖️ เปรียบเทียบ</button>
+          <button class="btn-secondary" onclick="navigate('/hr/resume')">2 📄 ใส่ Resume</button>
+          <button class="btn-primary" onclick="navigate('/hr/jd')">1 📋 สร้าง JD ใหม่</button>
         </div>
       </div>
 
@@ -585,7 +589,7 @@ function renderHRDashboard(root) {
               <th>ผู้สมัคร</th><th>ตำแหน่ง</th><th>วันที่เพิ่ม</th><th>% ความเหมาะสม</th><th>สถานะ</th><th></th>
             </tr></thead>
             <tbody>
-              ${recent.length === 0 ? `<tr><td colspan="6" class="text-center py-8 text-slate-400">ยังไม่มีผู้สมัคร — <a class="text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/add')">เพิ่มเลย</a></td></tr>`
+              ${recent.length === 0 ? `<tr><td colspan="6" class="text-center py-8 text-slate-400">ยังไม่มีผู้สมัคร — <a class="text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/jd')">เริ่มสร้าง JD</a></td></tr>`
               : recent.map(c => candidateRow(c)).join('')}
             </tbody>
           </table>
@@ -1044,6 +1048,407 @@ function openSendToExec(id) {
   });
 }
 
+/* ---------- HR 3-STEP FLOW ----------
+   Step 1 → /hr/jd      สร้าง JD
+   Step 2 → /hr/resume  ใส่ Resume ผู้สมัคร (ผูกกับ JD)
+   Step 3 → /hr/compare เปรียบเทียบ AI + ส่งให้ผู้บริหาร
+*/
+
+/* แถบขั้นตอนด้านบนของแต่ละหน้า */
+function stepBar(active /* 1|2|3 */, jdId = '') {
+  const steps = [
+    { n: 1, label: 'สร้าง JD',       href: '/hr/jd'     + (jdId?'/'+jdId:'') },
+    { n: 2, label: 'ใส่ Resume',     href: '/hr/resume' + (jdId?'/'+jdId:'') },
+    { n: 3, label: 'เปรียบเทียบ',    href: '/hr/compare'+ (jdId?'/'+jdId:'') },
+  ];
+  return `
+    <div class="flex items-center gap-2 mb-6">
+      ${steps.map((s, i) => `
+        <div class="flex items-center gap-2 cursor-pointer ${active === s.n ? '' : 'opacity-70 hover:opacity-100'}" onclick="navigate('${s.href}')">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${
+            active === s.n ? 'brand-gradient text-white shadow-md' :
+            active > s.n ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">
+            ${active > s.n ? '✓' : s.n}
+          </div>
+          <div class="text-sm ${active === s.n ? 'font-semibold text-slate-800' : 'text-slate-600'}">${s.label}</div>
+        </div>
+        ${i < steps.length-1 ? '<div class="flex-1 h-px bg-slate-200 mx-1 max-w-12"></div>' : ''}
+      `).join('')}
+    </div>`;
+}
+
+/* helper: หา JD ที่ active (ใหม่สุดของแต่ละ position หรือเฉพาะที่ส่งมา) */
+function getJdTitle(jd) {
+  if (!jd) return '-';
+  if (jd.title) return jd.title;
+  const pos = state.positions.find(p => p.id === jd.positionId);
+  return (pos?.title || 'JD') + (jd.createdAt ? ' — ' + fmtDateOnly(jd.createdAt) : '');
+}
+
+/* ---------- 11.1) STEP 1 — CREATE JD ---------- */
+let _jdPendingFile = null;   // ไฟล์ JD ที่กำลังจะแนบ (data URL ใน blob cache แล้ว)
+
+function renderHRJD(root, jdId = '') {
+  const positions = state.positions;
+  // ถ้าส่ง jdId มา → แสดงข้อมูล JD นั้นในฟอร์ม (mode แก้ไข)
+  const editing = jdId ? state.jobDescriptions.find(j => j.id === jdId) : null;
+  const allJds = [...state.jobDescriptions].reverse();
+
+  const content = `
+    <div class="p-8">
+      ${stepBar(1, '')}
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="card p-6">
+            <h2 class="text-xl font-semibold text-slate-800 mb-1">${editing ? '✏️ แก้ไข JD' : '📋 สร้าง JD ใหม่'}</h2>
+            <p class="text-sm text-slate-500 mb-5">กำหนดรายละเอียดตำแหน่งงาน เพื่อใช้เปรียบเทียบกับ Resume ของผู้สมัคร</p>
+
+            <form id="jdForm" class="space-y-4" onsubmit="return false;">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="label">ชื่อ JD / รอบที่เปิดรับ *</label>
+                  <input class="input" id="jd_title" placeholder="เช่น Senior Frontend Q2/2026" value="${editing?.title || ''}" required />
+                </div>
+                <div>
+                  <label class="label">ตำแหน่งงาน *</label>
+                  <select class="select" id="jd_position" required>
+                    <option value="">— เลือกตำแหน่ง —</option>
+                    ${positions.map(p => `<option value="${p.id}" ${editing?.positionId===p.id?'selected':''}>${p.title} (${p.department})</option>`).join('')}
+                    <option value="__new__">+ เพิ่มตำแหน่งใหม่...</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="jd_newPosBlock" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-indigo-50 rounded-lg">
+                <input class="input" id="jd_newPosTitle" placeholder="ชื่อตำแหน่งใหม่" />
+                <input class="input" id="jd_newPosDept" placeholder="แผนก" />
+              </div>
+
+              <div>
+                <label class="label">รายละเอียด JD *</label>
+                <textarea class="textarea" id="jd_text" rows="8" placeholder="ตัวอย่าง: ต้องการ Senior Frontend Developer ประสบการณ์ 4-6 ปี เชี่ยวชาญ React, TypeScript, Next.js..." required>${editing?.text || ''}</textarea>
+                <div class="text-xs text-slate-500 mt-1">ใส่ทักษะที่ต้องการ ประสบการณ์ การศึกษา และคุณสมบัติอื่นๆ — AI จะใช้ข้อความนี้เปรียบเทียบกับ Resume</div>
+              </div>
+
+              <div>
+                <label class="label">ไฟล์ JD ต้นฉบับ (ถ้ามี)</label>
+                <label class="file-drop block">
+                  <input type="file" class="hidden" id="jd_file" accept=".pdf,.docx,.doc,.txt,application/pdf" />
+                  <div id="jd_fileLabel" class="text-sm">
+                    📄 ${_jdPendingFile ? `<span class="font-medium text-slate-700">${_jdPendingFile.name}</span> <span class="text-slate-500">(${sizeFmt(_jdPendingFile.size)})</span>` : 'คลิกเพื่อแนบไฟล์ JD (PDF, DOCX, TXT)'}
+                  </div>
+                </label>
+              </div>
+
+              <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" class="btn-secondary" onclick="navigate('/hr/dashboard')">ยกเลิก</button>
+                <button type="button" class="btn-primary" onclick="submitJD('${editing?.id || ''}')">${editing ? '💾 บันทึก' : '➕ บันทึก JD &amp; ไปขั้นตอนถัดไป'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div>
+          <div class="card p-5">
+            <h3 class="font-semibold text-slate-800 mb-3">📚 JD ที่มีในระบบ (${allJds.length})</h3>
+            ${allJds.length === 0 ? '<div class="text-sm text-slate-400">ยังไม่มี JD</div>' : `
+              <div class="space-y-2 max-h-96 overflow-auto scroll-thin">
+                ${allJds.map(j => {
+                  const pos = positions.find(p => p.id === j.positionId);
+                  const candCount = state.candidates.filter(c => c.jdId === j.id).length;
+                  const jdFile = j.fileId ? { id: j.fileId, name: j.fileName || 'JD file', mime: j.fileMime || 'application/pdf' } : null;
+                  return `
+                  <div class="p-3 rounded-lg border border-slate-200 hover:border-indigo-300 ${editing?.id===j.id?'bg-indigo-50 border-indigo-300':''}">
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium text-slate-800 truncate">${getJdTitle(j)}</div>
+                        <div class="text-xs text-slate-500 truncate">${pos?.title || '-'} • ${pos?.department || ''}</div>
+                        <div class="text-xs text-slate-400 mt-1">👥 ${candCount} ผู้สมัคร${j.createdAt?` • ${fmtDateOnly(j.createdAt)}`:''}</div>
+                      </div>
+                      ${jdFile ? `<button class="text-xs text-slate-500 hover:text-indigo-600 flex-shrink-0" onclick="openFileViewer('${jdFile.id}')" title="ดูไฟล์ JD">👁</button>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1 mt-2">
+                      <button class="text-xs px-2 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100" onclick="navigate('/hr/jd/${j.id}')">แก้ไข</button>
+                      <button class="text-xs px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200" onclick="navigate('/hr/resume/${j.id}')">+ Resume</button>
+                      <button class="text-xs px-2 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200" onclick="navigate('/hr/compare/${j.id}')">⚖️</button>
+                      <button class="text-xs px-2 py-1 rounded text-rose-600 hover:bg-rose-50 ml-auto" onclick="deleteJD('${j.id}')">🗑️</button>
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>`}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+
+  // bind position dropdown new-position toggle
+  document.getElementById('jd_position').addEventListener('change', e => {
+    document.getElementById('jd_newPosBlock').classList.toggle('hidden', e.target.value !== '__new__');
+  });
+  // bind JD file input
+  document.getElementById('jd_file').addEventListener('change', async e => {
+    const f = e.target.files?.[0]; if (!f) return;
+    try {
+      const id = uid('f');
+      setFileBlob(id, await readFileAsDataURL(f));
+      _jdPendingFile = { id, name: f.name, size: f.size, mime: f.type };
+      document.getElementById('jd_fileLabel').innerHTML =
+        `📄 <span class="font-medium text-slate-700">${f.name}</span> <span class="text-slate-500">(${sizeFmt(f.size)})</span>`;
+      toast('แนบไฟล์ JD แล้ว');
+    } catch { toast('อ่านไฟล์ไม่สำเร็จ', 'error'); }
+  });
+}
+
+function submitJD(existingId) {
+  const title = $('#jd_title').value.trim();
+  let positionId = $('#jd_position').value;
+  const text = $('#jd_text').value.trim();
+  if (!title) return toast('กรุณากรอกชื่อ JD', 'error');
+  if (!positionId) return toast('กรุณาเลือกตำแหน่ง', 'error');
+  if (!text) return toast('กรุณากรอกรายละเอียด JD', 'error');
+
+  // ถ้าเลือก "+ เพิ่มตำแหน่งใหม่"
+  if (positionId === '__new__') {
+    const t = $('#jd_newPosTitle').value.trim();
+    const d = $('#jd_newPosDept').value.trim();
+    if (!t) return toast('กรุณากรอกชื่อตำแหน่งใหม่', 'error');
+    const np = { id: uid('p'), title: t, department: d || '-' };
+    state.positions.push(np);
+    positionId = np.id;
+    logActivity('create_position', 'position', np.id, { title: t });
+  }
+
+  if (existingId) {
+    const j = state.jobDescriptions.find(x => x.id === existingId);
+    if (!j) return toast('ไม่พบ JD', 'error');
+    j.title = title; j.positionId = positionId; j.text = text; j.updatedAt = new Date().toISOString();
+    if (_jdPendingFile) {
+      j.fileId = _jdPendingFile.id; j.fileName = _jdPendingFile.name; j.fileMime = _jdPendingFile.mime;
+    }
+    saveState(state);
+    logActivity('update_jd', 'jd', j.id);
+    _jdPendingFile = null;
+    toast('บันทึก JD แล้ว');
+    navigate('/hr/resume/' + j.id);
+    return;
+  }
+
+  const newJd = {
+    id: uid('jd'), title, positionId, text,
+    createdAt: new Date().toISOString(),
+    fileId: _jdPendingFile?.id || null,
+    fileName: _jdPendingFile?.name || null,
+    fileMime: _jdPendingFile?.mime || null,
+  };
+  state.jobDescriptions.push(newJd);
+  saveState(state);
+  logActivity('create_jd', 'jd', newJd.id, { title });
+  _jdPendingFile = null;
+  toast('สร้าง JD แล้ว → ไปขั้นตอนใส่ Resume');
+  navigate('/hr/resume/' + newJd.id);
+}
+
+function deleteJD(id) {
+  const usage = state.candidates.filter(c => c.jdId === id).length;
+  if (usage > 0) {
+    if (!confirm(`JD นี้ถูกใช้กับผู้สมัคร ${usage} คน — ยืนยันลบ JD (ผู้สมัครจะยังอยู่)?`)) return;
+  } else if (!confirm('ยืนยันลบ JD?')) return;
+  state.jobDescriptions = state.jobDescriptions.filter(j => j.id !== id);
+  saveState(state);
+  logActivity('delete_jd', 'jd', id);
+  toast('ลบ JD แล้ว'); render();
+}
+
+/* ---------- 11.2) STEP 2 — ADD RESUMES UNDER JD ---------- */
+let _resumePendingFiles = {};   // { resume: blob, audio: blob, compare: blob }
+
+function renderHRResume(root, jdIdParam = '') {
+  const allJds = [...state.jobDescriptions].reverse();
+  let jd = jdIdParam ? state.jobDescriptions.find(j => j.id === jdIdParam) : (allJds[0] || null);
+  if (!jd && allJds.length === 0) {
+    // ยังไม่มี JD เลย → ส่งกลับไปหน้า 1
+    const content = `
+      <div class="p-8">
+        ${stepBar(2, '')}
+        <div class="card p-12 text-center">
+          <div class="text-5xl mb-3">📋</div>
+          <div class="text-slate-700 font-medium mb-2">ยังไม่มี JD ในระบบ</div>
+          <div class="text-sm text-slate-500 mb-4">สร้าง JD ก่อนแล้วค่อยใส่ Resume ผู้สมัคร</div>
+          <button class="btn-primary" onclick="navigate('/hr/jd')">📋 ไปสร้าง JD</button>
+        </div>
+      </div>`;
+    root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+    return;
+  }
+  const pos = state.positions.find(p => p.id === jd.positionId);
+  const cands = state.candidates.filter(c => c.jdId === jd.id);
+
+  const content = `
+    <div class="p-8">
+      ${stepBar(2, jd.id)}
+
+      <div class="card p-5 mb-6">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div class="flex-1 min-w-0">
+            <div class="text-xs text-slate-500 mb-1">JD ที่เลือก</div>
+            <div class="text-lg font-semibold text-slate-800">${getJdTitle(jd)}</div>
+            <div class="text-sm text-slate-500">${pos?.title || '-'} • ${pos?.department || ''}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <select class="select" style="min-width:240px;" onchange="navigate('/hr/resume/'+this.value)">
+              ${allJds.map(j => `<option value="${j.id}" ${j.id===jd.id?'selected':''}>${getJdTitle(j)}</option>`).join('')}
+            </select>
+            ${jd.fileId ? `<button class="btn-secondary text-sm" onclick="openFileViewer('${jd.fileId}')">👁 ดูไฟล์ JD</button>` : ''}
+            <button class="btn-secondary text-sm" onclick="navigate('/hr/jd/${jd.id}')">✏️ แก้ JD</button>
+          </div>
+        </div>
+        <details class="mt-3">
+          <summary class="text-xs text-indigo-600 hover:underline">▾ ดู JD เต็ม</summary>
+          <div class="mt-2 p-3 rounded-lg bg-slate-50 text-sm text-slate-700 whitespace-pre-wrap">${jd.text}</div>
+        </details>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-6">
+          <h3 class="font-semibold text-slate-800 mb-4">📄 เพิ่มผู้สมัครใหม่</h3>
+          <form id="resumeForm" class="space-y-3" onsubmit="return false;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div><label class="label">ชื่อ-สกุล *</label><input class="input" id="r_name" placeholder="เช่น สมชาย ใจดี" required /></div>
+              <div><label class="label">อีเมล *</label><input class="input" type="email" id="r_email" required /></div>
+            </div>
+            <div><label class="label">เบอร์โทร</label><input class="input" id="r_phone" placeholder="081-xxx-xxxx" /></div>
+
+            <div>
+              <label class="label">เนื้อหา Resume (ข้อความ) *</label>
+              <textarea class="textarea" id="r_resume" rows="5" placeholder="วาง/พิมพ์เนื้อหา Resume ที่นี่ — ระบบจะใช้ข้อความนี้เปรียบเทียบกับ JD ด้วย AI" required></textarea>
+            </div>
+
+            <div>
+              <label class="label">ความเห็น HR เบื้องต้น</label>
+              <textarea class="textarea" id="r_note" rows="2" placeholder="ความเห็น/สังเกตเบื้องต้น..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+              ${resumeFileSlot('resume', '📄 ไฟล์ Resume', '.pdf,.docx,.doc', 'PDF/DOCX')}
+              ${resumeFileSlot('audio',  '🎙️ เสียงแนะนำ HR', 'audio/*',     'MP3/M4A/WAV')}
+              ${resumeFileSlot('compare','📊 ไฟล์เปรียบเทียบ','.pdf,.xlsx,.xls,.csv', 'PDF/XLSX/CSV')}
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+              <button type="button" class="btn-secondary" onclick="resetResumeForm()">ล้าง</button>
+              <button type="button" class="btn-primary" onclick="submitResume('${jd.id}')">➕ เพิ่มและประเมิน AI</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-slate-800">👥 ผู้สมัครใน JD นี้ (${cands.length})</h3>
+            ${cands.length > 0 ? `<button class="btn-primary text-sm" onclick="navigate('/hr/compare/${jd.id}')">→ ไปขั้นตอนเปรียบเทียบ</button>` : ''}
+          </div>
+          ${cands.length === 0 ? `
+            <div class="p-10 text-center text-slate-400">
+              <div class="text-4xl mb-2">📭</div>
+              <div class="text-sm">ยังไม่มีผู้สมัครใน JD นี้</div>
+              <div class="text-xs mt-1">เพิ่มจากฟอร์มด้านซ้าย</div>
+            </div>` : `
+            <div class="space-y-2 max-h-[500px] overflow-auto scroll-thin">
+              ${cands.map(c => {
+                const score = c.aiResult?.overallScore;
+                return `
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <div class="font-medium text-slate-800 truncate">${c.name}</div>
+                      <div class="text-xs text-slate-500 truncate">${c.email} • ${c.phone || '-'}</div>
+                      <div class="mt-1 flex items-center gap-2">
+                        ${statusPill(c.status)}
+                        ${typeof score === 'number' ? `<span class="text-sm font-semibold" style="color:${matchColor(score)}">${score}%</span>` : ''}
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-1 flex-shrink-0">
+                      <button class="text-xs text-indigo-600 hover:underline" onclick="navigate('/hr/candidate/${c.id}')">รายละเอียด</button>
+                      <button class="text-xs text-rose-600 hover:underline" onclick="deleteCandidate('${c.id}')">ลบ</button>
+                    </div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>`}
+        </div>
+      </div>
+    </div>`;
+  root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
+
+  // bind file inputs
+  ['resume','audio','compare'].forEach(t => {
+    const inp = document.querySelector(`input[data-rfile="${t}"]`); if (!inp) return;
+    inp.addEventListener('change', async e => {
+      const f = e.target.files?.[0]; if (!f) return;
+      try {
+        const id = uid('f');
+        setFileBlob(id, await readFileAsDataURL(f));
+        _resumePendingFiles[t] = { id, type: t, name: f.name, size: f.size, mime: f.type };
+        document.getElementById(`r_lbl_${t}`).innerHTML =
+          `<span class="font-medium text-slate-700 truncate block">${f.name}</span><span class="text-xs text-slate-500">${sizeFmt(f.size)}</span>`;
+        toast('แนบไฟล์ ' + (t==='audio'?'เสียง':t==='compare'?'เปรียบเทียบ':'Resume') + ' แล้ว');
+      } catch { toast('อ่านไฟล์ไม่สำเร็จ', 'error'); }
+    });
+  });
+}
+
+function resumeFileSlot(type, label, accept, hint) {
+  const f = _resumePendingFiles[type];
+  return `
+    <label class="block p-3 rounded-lg border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition text-center">
+      <input type="file" class="hidden" data-rfile="${type}" accept="${accept}" />
+      <div class="text-sm font-medium text-slate-700">${label}</div>
+      <div id="r_lbl_${type}" class="mt-1">${f
+        ? `<span class="font-medium text-slate-700 truncate block">${f.name}</span><span class="text-xs text-slate-500">${sizeFmt(f.size)}</span>`
+        : `<span class="text-xs text-slate-500">${hint}</span><div class="text-xs text-indigo-600 mt-0.5">+ คลิกเพื่อแนบ</div>`}
+      </div>
+    </label>`;
+}
+
+function resetResumeForm() {
+  ['r_name','r_email','r_phone','r_resume','r_note'].forEach(id => {
+    const el = $('#'+id); if (el) el.value = '';
+  });
+  // ลบไฟล์ที่ค้าง
+  Object.values(_resumePendingFiles).forEach(f => f && delete _fileBlobs[f.id]);
+  saveFileBlobs();
+  _resumePendingFiles = {};
+  render();
+}
+
+function submitResume(jdId) {
+  const jd = state.jobDescriptions.find(j => j.id === jdId);
+  if (!jd) return toast('ไม่พบ JD', 'error');
+  const name = $('#r_name').value.trim();
+  const email = $('#r_email').value.trim();
+  const resumeText = $('#r_resume').value.trim();
+  if (!name) return toast('กรุณากรอกชื่อผู้สมัคร', 'error');
+  if (!email) return toast('กรุณากรอกอีเมล', 'error');
+  if (!resumeText) return toast('กรุณากรอกเนื้อหา Resume', 'error');
+
+  const aiResult = runAIMatching(resumeText, jd.text);
+  const files = Object.values(_resumePendingFiles).filter(Boolean);
+
+  const cand = {
+    id: uid('c'), name, email, phone: $('#r_phone').value.trim(),
+    positionId: jd.positionId, jdId: jd.id, addedBy: session.userId, addedAt: new Date().toISOString(),
+    resumeText, hrNote: $('#r_note').value.trim(),
+    status: 'evaluated', files, aiResult, hrReview: null, executiveReview: null, assignment: null,
+  };
+  state.candidates.unshift(cand);
+  saveState(state);
+  logActivity('create_candidate', 'candidate', cand.id, { name, score: aiResult.overallScore, jdId: jd.id });
+  toast(`เพิ่ม ${name} แล้ว — AI Match ${aiResult.overallScore}%`);
+  _resumePendingFiles = {};
+  render();
+}
+
 /* ---------- 11.5) HR COMPARE & SEND ----------
    หน้าเปรียบเทียบ AI หลายผู้สมัครในตำแหน่งเดียวกัน
    - HR เลือกผู้สมัครที่สนใจ (multi-select)
@@ -1052,9 +1457,8 @@ function openSendToExec(id) {
 */
 const _compareSelected = new Set();   // candidateIds ที่ HR เลือกในรอบนี้
 
-function renderHRCompare(root, posIdParam = '') {
+function renderHRCompare(root, idParam = '') {
   // Backfill: ผู้สมัคร demo บางรายอาจมี status='evaluated' แต่ aiResult=null
-  // → คำนวณให้อัตโนมัติเพื่อให้หน้าเปรียบเทียบใช้งานได้ทันที
   let backfilled = false;
   state.candidates.forEach(c => {
     if (!c.aiResult && c.resumeText) {
@@ -1066,26 +1470,37 @@ function renderHRCompare(root, posIdParam = '') {
   if (backfilled) saveState(state);
 
   const positions = state.positions;
-  // หาตำแหน่งเริ่มต้น: ใช้ที่ส่งมาใน URL ถ้ามี ไม่งั้นเลือกตำแหน่งแรกที่มีผู้สมัครประเมินแล้ว
-  let posId = posIdParam || '';
-  if (!posId) {
-    const evaluatedPos = state.candidates.filter(c => c.aiResult).map(c => c.positionId);
-    posId = evaluatedPos[0] || positions[0]?.id || '';
-  }
-  const pos = positions.find(p => p.id === posId);
-  // ผู้สมัครในตำแหน่งนี้ที่ยังไม่ส่ง/ยังประเมินอยู่ (รวม evaluated + pending_exec)
+  const allJds = [...state.jobDescriptions].reverse();
+
+  // ตรวจว่า idParam เป็น JD id หรือ Position id (หรือว่าง)
+  const matchedJd = idParam ? state.jobDescriptions.find(j => j.id === idParam) : null;
+  const matchedPos = (idParam && !matchedJd) ? positions.find(p => p.id === idParam) : null;
+  // โหมด: 'jd' (filter ตาม JD), 'pos' (filter ตาม Position), หรือ default 'jd' กับ JD ใหม่สุด
+  let mode, jdScope = null, posScope = null;
+  if (matchedJd) { mode = 'jd'; jdScope = matchedJd; }
+  else if (matchedPos) { mode = 'pos'; posScope = matchedPos; }
+  else if (allJds.length > 0) { mode = 'jd'; jdScope = allJds[0]; }
+  else { mode = 'pos'; posScope = positions[0] || null; }
+
   const cands = state.candidates
-    .filter(c => c.positionId === posId && c.aiResult)
+    .filter(c => mode === 'jd' ? c.jdId === jdScope?.id : c.positionId === posScope?.id)
+    .filter(c => c.aiResult)
     .filter(c => c.status === 'evaluated' || c.status === 'pending_exec' || c.status === 'sent_to_exec' || c.status === 'new')
     .sort((a,b) => (b.aiResult.overallScore||0) - (a.aiResult.overallScore||0));
   const execs = state.users.filter(u => u.role === 'executive');
 
-  // ตัด selected ที่ไม่อยู่ในรายการนี้ออก (เผื่อสลับตำแหน่ง)
+  // ตัด selected ที่ไม่อยู่ในรายการนี้ออก
   const validIds = new Set(cands.map(c => c.id));
   [..._compareSelected].forEach(id => { if (!validIds.has(id)) _compareSelected.delete(id); });
 
+  const scopeId = mode === 'jd' ? jdScope?.id : posScope?.id;
+  const scopePos = mode === 'jd' ? positions.find(p => p.id === jdScope?.positionId) : posScope;
+  const scopeTitle = mode === 'jd' ? getJdTitle(jdScope) : (posScope?.title || '-');
+
   const content = `
     <div class="p-8">
+      ${stepBar(3, mode === 'jd' ? jdScope?.id : '')}
+
       <div class="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 class="text-2xl font-bold text-slate-800">⚖️ เปรียบเทียบผู้สมัคร AI &amp; ส่งให้ผู้บริหาร</h1>
@@ -1097,16 +1512,29 @@ function renderHRCompare(root, posIdParam = '') {
       <div class="card p-4 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
           <div class="md:col-span-2">
-            <label class="label">เลือกตำแหน่งงาน</label>
-            <select class="select" id="cmp_pos" onchange="navigate('/hr/compare/' + this.value)">
-              ${positions.map(p => {
-                const n = state.candidates.filter(c => c.positionId === p.id && c.aiResult).length;
-                return `<option value="${p.id}" ${p.id===posId?'selected':''}>${p.title} (${p.department}) — ${n} คน</option>`;
-              }).join('')}
-            </select>
+            <label class="label">เปรียบเทียบในขอบเขต</label>
+            <div class="flex gap-2">
+              <select class="select flex-1" id="cmp_scope" onchange="navigate('/hr/compare/' + this.value)">
+                <optgroup label="📋 ตาม JD (แนะนำ)">
+                  ${allJds.map(j => {
+                    const n = state.candidates.filter(c => c.jdId === j.id && c.aiResult).length;
+                    return `<option value="${j.id}" ${j.id===scopeId?'selected':''}>${getJdTitle(j)} — ${n} คน</option>`;
+                  }).join('')}
+                </optgroup>
+                <optgroup label="💼 ตามตำแหน่ง (รวมทุก JD)">
+                  ${positions.map(p => {
+                    const n = state.candidates.filter(c => c.positionId === p.id && c.aiResult).length;
+                    return `<option value="${p.id}" ${p.id===scopeId?'selected':''}>${p.title} (${p.department}) — ${n} คน</option>`;
+                  }).join('')}
+                </optgroup>
+              </select>
+              ${mode === 'jd' && jdScope?.fileId ? `<button class="btn-secondary text-sm" onclick="openFileViewer('${jdScope.fileId}')">👁 JD</button>` : ''}
+            </div>
+            <div class="text-xs text-slate-500 mt-1">${mode==='jd'?'🎯 เปรียบเทียบเฉพาะผู้สมัครใน JD นี้':'📊 รวมผู้สมัครทุก JD ในตำแหน่งนี้'}</div>
           </div>
           <div class="text-sm text-slate-500">
             <div>เลือกแล้ว: <span class="font-semibold text-indigo-600" id="cmp_selectedCount">${_compareSelected.size}</span> / ${cands.length} คน</div>
+            <div class="text-xs mt-1">${scopePos?.title || '-'} • ${scopePos?.department || ''}</div>
           </div>
         </div>
       </div>
@@ -1114,15 +1542,15 @@ function renderHRCompare(root, posIdParam = '') {
       ${cands.length === 0 ? `
         <div class="card p-12 text-center text-slate-400">
           <div class="text-5xl mb-3">🗂️</div>
-          <div class="text-slate-600 font-medium mb-1">ยังไม่มีผู้สมัครที่ประเมิน AI ในตำแหน่งนี้</div>
-          <div class="text-sm text-slate-500">ลอง <a class="text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/add')">เพิ่มผู้สมัคร</a> ก่อน</div>
+          <div class="text-slate-600 font-medium mb-1">ยังไม่มีผู้สมัครที่ประเมิน AI ใน${mode==='jd'?'JD':'ตำแหน่ง'}นี้</div>
+          <div class="text-sm text-slate-500">ลอง <a class="text-indigo-600 hover:underline cursor-pointer" onclick="navigate('/hr/resume${mode==='jd'?'/'+jdScope.id:''}')">ใส่ Resume</a> ก่อน</div>
         </div>
       ` : `
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           ${cands.map(c => compareCandidateCard(c)).join('')}
         </div>
 
-        ${composeEmailPanel(pos, execs)}
+        ${composeEmailPanel(scopePos, execs, jdScope)}
       `}
     </div>`;
   root.innerHTML = shell(content, HR_NAV, 'พื้นที่ HR');
@@ -1252,10 +1680,12 @@ function toggleCompareSelect(id) {
   render();
 }
 
-function composeEmailPanel(pos, execs) {
+function composeEmailPanel(pos, execs, jd) {
   const selectedList = [..._compareSelected]
     .map(id => state.candidates.find(c => c.id === id))
     .filter(Boolean);
+  const jdLabel = jd ? getJdTitle(jd) : '';
+  const subjectDefault = `ขอความเห็นเกี่ยวกับผู้สมัครตำแหน่ง ${(pos?.title||'-').replace(/"/g,'&quot;')}${jdLabel?` (${jdLabel.replace(/"/g,'&quot;')})`:''}`;
   return `
     <div class="card p-6 sticky bottom-4">
       <h3 class="font-semibold text-slate-800 mb-3">📧 ส่งให้ผู้บริหารพิจารณา</h3>
@@ -1273,6 +1703,9 @@ function composeEmailPanel(pos, execs) {
             </div>
           </div>`}
 
+      <input type="hidden" id="cmp_jdId" value="${jd?.id || ''}" />
+      <input type="hidden" id="cmp_posId" value="${pos?.id || ''}" />
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label class="label">ส่งถึงผู้บริหาร *</label>
@@ -1283,7 +1716,7 @@ function composeEmailPanel(pos, execs) {
         </div>
         <div>
           <label class="label">หัวข้อเมล</label>
-          <input class="input" id="cmp_subject" value="ขอความเห็นเกี่ยวกับผู้สมัครตำแหน่ง ${(pos?.title||'-').replace(/"/g,'&quot;')}" />
+          <input class="input" id="cmp_subject" value="${subjectDefault}" />
         </div>
       </div>
 
@@ -1291,7 +1724,7 @@ function composeEmailPanel(pos, execs) {
         <label class="label">ข้อความถึงผู้บริหาร</label>
         <textarea class="textarea" id="cmp_msg" rows="4" placeholder="เรียน คุณผู้บริหาร...">เรียน คุณผู้บริหาร
 
-ฝ่าย HR ได้ทำการคัดกรองผู้สมัครตำแหน่ง ${pos?.title||''} เบื้องต้นด้วย AI แล้ว และได้คัดเลือกผู้สมัครที่มีคุณสมบัติเหมาะสมเพื่อขอความเห็นจากผู้บริหารดังต่อไปนี้
+ฝ่าย HR ได้ทำการคัดกรองผู้สมัครตำแหน่ง ${pos?.title||''}${jdLabel?` (JD: ${jdLabel})`:''} เบื้องต้นด้วย AI แล้ว และได้คัดเลือกผู้สมัครที่มีคุณสมบัติเหมาะสมเพื่อขอความเห็นจากผู้บริหารดังต่อไปนี้
 
 (รายละเอียดผู้สมัครจะถูกแนบในเนื้อเมลด้านล่างอัตโนมัติ)
 
@@ -1305,18 +1738,19 @@ ${session.name}</textarea>
         </div>
         <div class="flex items-center gap-2">
           <button class="btn-secondary" onclick="previewEmail()" ${selectedList.length===0?'disabled':''}>👁 ดูตัวอย่างเมล</button>
-          <button class="btn-primary" onclick="sendCompareEmail('${pos?.id||''}')" ${selectedList.length===0?'disabled':''}>📧 เปิดโปรแกรมเมล &amp; ส่ง</button>
+          <button class="btn-primary" onclick="sendCompareEmail()" ${selectedList.length===0?'disabled':''}>📧 เปิดโปรแกรมเมล &amp; ส่ง</button>
         </div>
       </div>
     </div>`;
 }
 
-function buildEmailBody(pos, selected, intro) {
+function buildEmailBody(pos, selected, intro, jd) {
   const lines = [];
   lines.push(intro || '');
   lines.push('');
   lines.push('═══════════════════════════════════════');
   lines.push(`ตำแหน่งงาน: ${pos?.title || '-'} (${pos?.department || ''})`);
+  if (jd) lines.push(`JD: ${getJdTitle(jd)}`);
   lines.push(`จำนวนผู้สมัครที่คัดเลือก: ${selected.length} คน`);
   lines.push('═══════════════════════════════════════');
   lines.push('');
@@ -1340,14 +1774,16 @@ function buildEmailBody(pos, selected, intro) {
 }
 
 function previewEmail() {
-  const posId = $('#cmp_pos').value;
+  const jdId = $('#cmp_jdId')?.value || '';
+  const posId = $('#cmp_posId')?.value || '';
+  const jd = jdId ? state.jobDescriptions.find(j => j.id === jdId) : null;
   const pos = state.positions.find(p => p.id === posId);
   const selected = [..._compareSelected].map(id => state.candidates.find(c => c.id === id)).filter(Boolean);
   const subject = $('#cmp_subject').value;
   const intro = $('#cmp_msg').value;
   const execIds = [...$('#cmp_exec').selectedOptions].map(o => o.value);
   const toEmails = state.users.filter(u => execIds.includes(u.id)).map(u => u.email);
-  const body = buildEmailBody(pos, selected, intro);
+  const body = buildEmailBody(pos, selected, intro, jd);
   modal({
     title: '👁 ตัวอย่างเมลที่จะส่ง',
     body: `
@@ -1363,7 +1799,10 @@ function previewEmail() {
   });
 }
 
-function sendCompareEmail(posId) {
+function sendCompareEmail() {
+  const jdId = $('#cmp_jdId')?.value || '';
+  const posId = $('#cmp_posId')?.value || '';
+  const jd = jdId ? state.jobDescriptions.find(j => j.id === jdId) : null;
   const selected = [..._compareSelected].map(id => state.candidates.find(c => c.id === id)).filter(Boolean);
   if (selected.length === 0) return toast('ยังไม่ได้เลือกผู้สมัคร', 'error');
   const execIds = [...$('#cmp_exec').selectedOptions].map(o => o.value);
@@ -1373,7 +1812,7 @@ function sendCompareEmail(posId) {
   const subject = $('#cmp_subject').value || 'ขอความเห็นเกี่ยวกับผู้สมัคร';
   const intro = $('#cmp_msg').value || '';
   const toEmails = state.users.filter(u => execIds.includes(u.id)).map(u => u.email);
-  const body = buildEmailBody(pos, selected, intro);
+  const body = buildEmailBody(pos, selected, intro, jd);
 
   // เปิด mailto: ในโปรแกรมเมลของเครื่อง
   const mailto = `mailto:${encodeURIComponent(toEmails.join(','))}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1407,7 +1846,8 @@ function sendCompareEmail(posId) {
   });
   saveState(state);
   logActivity('send_compare_email', 'candidate', null, {
-    count: selected.length, candidateIds: selected.map(c=>c.id), execIds, position: pos?.title
+    count: selected.length, candidateIds: selected.map(c=>c.id), execIds,
+    position: pos?.title, jd: jd ? getJdTitle(jd) : null,
   });
   _compareSelected.clear();
   toast(`เปิดโปรแกรมเมล ส่ง ${selected.length} คน ให้ผู้บริหาร ${execIds.length} ท่าน`);
@@ -3093,6 +3533,7 @@ CREATE POLICY "hr_update_own" ON candidates FOR UPDATE
     </ul>
   `,
 };
+/* end of script */
 </script>
 </body>
 </html>
